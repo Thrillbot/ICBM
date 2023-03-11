@@ -1,22 +1,47 @@
+using Fusion;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GunAim : MonoBehaviour {
+public class GunAim : NetworkTransform {
 
+	public Transform debugObject;
 	public GameObject crossHair;
 	public ParticleSystem bullets;
 	public float speed;
 
+	public Vector3 workerVec;
+
 	void Update() {
-		Vector3 lookAt = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-		transform.up = Vector2.Lerp(transform.up, (lookAt - transform.position), speed * 0.0001f);
-		//crossHair.transform.localPosition = new Vector2(0,Vector2.Distance(lookAt,transform.position));
-		
-		if (Input.GetMouseButtonDown(0)) {
+		if (!HasStateAuthority)
+			return;
+
+		RaycastHit hit;
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+		if (Physics.Raycast(ray, out hit))
+		{
+			transform.up = Vector3.Lerp(transform.up, (hit.point - transform.position), speed * 0.0001f);
+		}
+		if (Input.GetMouseButtonDown(0))
+		{
+			RPC_Fire(true);
+		}
+		if (Input.GetMouseButtonUp(0))
+		{
+			RPC_Fire(false);
+		}
+	}
+
+	[Rpc(sources: RpcSources.InputAuthority, targets: RpcTargets.StateAuthority)]
+	public void RPC_Fire(bool firing)
+	{
+		if (firing)
+		{
 			bullets.Play();
 		}
-		if (Input.GetMouseButtonUp(0)) {
+		else
+		{
 			bullets.Stop();
 		}
 	}
