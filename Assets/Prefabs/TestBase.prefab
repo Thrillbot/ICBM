@@ -107,13 +107,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 186509095412531312}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6be673dd6f90cd488f94f569e88944d, type: 3}
+  m_Script: {fileID: 11500000, guid: 3ce2814f6a3b59447ae8350e844869bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  crafts:
-  - craft: {fileID: 0}
-  - craft: {fileID: 0}
-  - craft: {fileID: 0}
-  - craft: {fileID: 0}
-  - craft: {fileID: 0}
+  crafts: []
   radioPower: 1000
