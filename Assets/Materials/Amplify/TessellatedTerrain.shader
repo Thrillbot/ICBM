@@ -11,7 +11,8 @@ Shader "TessellatedTerrain"
 		_Flat("Flat", 2D) = "white" {}
 		_Cliff("Cliff", 2D) = "white" {}
 		_FlatNormal("Flat Normal", 2D) = "white" {}
-		[ASEEnd]_CliffNormal("Cliff Normal", 2D) = "white" {}
+		_CliffNormal("Cliff Normal", 2D) = "white" {}
+		[ASEEnd]_Angle("Angle", Range( -1 , 1)) = 0.9999
 		[HideInInspector] _texcoord( "", 2D ) = "white" {}
 
 
@@ -196,6 +197,7 @@ Shader "TessellatedTerrain"
 			#pragma hull HullFunction
 			#pragma domain DomainFunction
 			#define ASE_DISTANCE_TESSELLATION
+			#define _SPECULAR_SETUP 1
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 130108
 
@@ -288,6 +290,7 @@ Shader "TessellatedTerrain"
 			float4 _CliffNormal_ST;
 			float4 _FlatNormal_ST;
 			float _Height;
+			float _Angle;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
 			#endif
@@ -561,23 +564,25 @@ Shader "TessellatedTerrain"
 				float3 normalizeResult53 = normalize( WorldPosition );
 				float dotResult51 = dot( WorldNormal , normalizeResult53 );
 				float ifLocalVar62 = 0;
-				if( dotResult51 <= 0.9999 )
+				if( dotResult51 <= _Angle )
 				ifLocalVar62 = 1.0;
 				float2 uv_Flat = IN.ase_texcoord8.xy * _Flat_ST.xy + _Flat_ST.zw;
 				float ifLocalVar56 = 0;
-				if( dotResult51 > 0.9999 )
+				if( dotResult51 > _Angle )
 				ifLocalVar56 = 1.0;
 				
 				float2 uv_CliffNormal = IN.ase_texcoord8.xy * _CliffNormal_ST.xy + _CliffNormal_ST.zw;
 				float2 uv_FlatNormal = IN.ase_texcoord8.xy * _FlatNormal_ST.xy + _FlatNormal_ST.zw;
 				
+				float3 temp_cast_3 = (0.0).xxx;
+				
 
 				float3 BaseColor = ( ( tex2D( _Cliff, uv_Cliff ) * ifLocalVar62 ) + ( tex2D( _Flat, uv_Flat ) * ifLocalVar56 ) ).rgb;
 				float3 Normal = ( ( UnpackNormalScale( tex2D( _CliffNormal, uv_CliffNormal ), 1.0 ) * ifLocalVar62 ) + ( ifLocalVar56 * UnpackNormalScale( tex2D( _FlatNormal, uv_FlatNormal ), 1.0 ) ) );
 				float3 Emission = 0;
-				float3 Specular = 0.5;
+				float3 Specular = temp_cast_3;
 				float Metallic = 0;
-				float Smoothness = 0.5;
+				float Smoothness = 0.0;
 				float Occlusion = 1;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
@@ -798,6 +803,7 @@ Shader "TessellatedTerrain"
 			#pragma hull HullFunction
 			#pragma domain DomainFunction
 			#define ASE_DISTANCE_TESSELLATION
+			#define _SPECULAR_SETUP 1
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 130108
 
@@ -850,6 +856,7 @@ Shader "TessellatedTerrain"
 			float4 _CliffNormal_ST;
 			float4 _FlatNormal_ST;
 			float _Height;
+			float _Angle;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
 			#endif
@@ -1118,6 +1125,7 @@ Shader "TessellatedTerrain"
 			#pragma hull HullFunction
 			#pragma domain DomainFunction
 			#define ASE_DISTANCE_TESSELLATION
+			#define _SPECULAR_SETUP 1
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 130108
 
@@ -1168,6 +1176,7 @@ Shader "TessellatedTerrain"
 			float4 _CliffNormal_ST;
 			float4 _FlatNormal_ST;
 			float _Height;
+			float _Angle;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
 			#endif
@@ -1408,6 +1417,7 @@ Shader "TessellatedTerrain"
 			#pragma hull HullFunction
 			#pragma domain DomainFunction
 			#define ASE_DISTANCE_TESSELLATION
+			#define _SPECULAR_SETUP 1
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 130108
 
@@ -1471,6 +1481,7 @@ Shader "TessellatedTerrain"
 			float4 _CliffNormal_ST;
 			float4 _FlatNormal_ST;
 			float _Height;
+			float _Angle;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
 			#endif
@@ -1689,11 +1700,11 @@ Shader "TessellatedTerrain"
 				float3 normalizeResult53 = normalize( WorldPosition );
 				float dotResult51 = dot( ase_worldNormal , normalizeResult53 );
 				float ifLocalVar62 = 0;
-				if( dotResult51 <= 0.9999 )
+				if( dotResult51 <= _Angle )
 				ifLocalVar62 = 1.0;
 				float2 uv_Flat = IN.ase_texcoord4.xy * _Flat_ST.xy + _Flat_ST.zw;
 				float ifLocalVar56 = 0;
-				if( dotResult51 > 0.9999 )
+				if( dotResult51 > _Angle )
 				ifLocalVar56 = 1.0;
 				
 
@@ -1741,6 +1752,7 @@ Shader "TessellatedTerrain"
 			#pragma hull HullFunction
 			#pragma domain DomainFunction
 			#define ASE_DISTANCE_TESSELLATION
+			#define _SPECULAR_SETUP 1
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 130108
 
@@ -1794,6 +1806,7 @@ Shader "TessellatedTerrain"
 			float4 _CliffNormal_ST;
 			float4 _FlatNormal_ST;
 			float _Height;
+			float _Angle;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
 			#endif
@@ -1997,11 +2010,11 @@ Shader "TessellatedTerrain"
 				float3 normalizeResult53 = normalize( WorldPosition );
 				float dotResult51 = dot( ase_worldNormal , normalizeResult53 );
 				float ifLocalVar62 = 0;
-				if( dotResult51 <= 0.9999 )
+				if( dotResult51 <= _Angle )
 				ifLocalVar62 = 1.0;
 				float2 uv_Flat = IN.ase_texcoord2.xy * _Flat_ST.xy + _Flat_ST.zw;
 				float ifLocalVar56 = 0;
-				if( dotResult51 > 0.9999 )
+				if( dotResult51 > _Angle )
 				ifLocalVar56 = 1.0;
 				
 
@@ -2043,6 +2056,7 @@ Shader "TessellatedTerrain"
 			#pragma hull HullFunction
 			#pragma domain DomainFunction
 			#define ASE_DISTANCE_TESSELLATION
+			#define _SPECULAR_SETUP 1
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 130108
 
@@ -2098,6 +2112,7 @@ Shader "TessellatedTerrain"
 			float4 _CliffNormal_ST;
 			float4 _FlatNormal_ST;
 			float _Height;
+			float _Angle;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
 			#endif
@@ -2314,10 +2329,10 @@ Shader "TessellatedTerrain"
 				float3 normalizeResult53 = normalize( WorldPosition );
 				float dotResult51 = dot( WorldNormal , normalizeResult53 );
 				float ifLocalVar62 = 0;
-				if( dotResult51 <= 0.9999 )
+				if( dotResult51 <= _Angle )
 				ifLocalVar62 = 1.0;
 				float ifLocalVar56 = 0;
-				if( dotResult51 > 0.9999 )
+				if( dotResult51 > _Angle )
 				ifLocalVar56 = 1.0;
 				float2 uv_FlatNormal = IN.ase_texcoord4.xy * _FlatNormal_ST.xy + _FlatNormal_ST.zw;
 				
@@ -2393,6 +2408,7 @@ Shader "TessellatedTerrain"
 			#pragma hull HullFunction
 			#pragma domain DomainFunction
 			#define ASE_DISTANCE_TESSELLATION
+			#define _SPECULAR_SETUP 1
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 130108
 
@@ -2481,6 +2497,7 @@ Shader "TessellatedTerrain"
 			float4 _CliffNormal_ST;
 			float4 _FlatNormal_ST;
 			float _Height;
+			float _Angle;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
 			#endif
@@ -2747,23 +2764,25 @@ Shader "TessellatedTerrain"
 				float3 normalizeResult53 = normalize( WorldPosition );
 				float dotResult51 = dot( WorldNormal , normalizeResult53 );
 				float ifLocalVar62 = 0;
-				if( dotResult51 <= 0.9999 )
+				if( dotResult51 <= _Angle )
 				ifLocalVar62 = 1.0;
 				float2 uv_Flat = IN.ase_texcoord8.xy * _Flat_ST.xy + _Flat_ST.zw;
 				float ifLocalVar56 = 0;
-				if( dotResult51 > 0.9999 )
+				if( dotResult51 > _Angle )
 				ifLocalVar56 = 1.0;
 				
 				float2 uv_CliffNormal = IN.ase_texcoord8.xy * _CliffNormal_ST.xy + _CliffNormal_ST.zw;
 				float2 uv_FlatNormal = IN.ase_texcoord8.xy * _FlatNormal_ST.xy + _FlatNormal_ST.zw;
 				
+				float3 temp_cast_3 = (0.0).xxx;
+				
 
 				float3 BaseColor = ( ( tex2D( _Cliff, uv_Cliff ) * ifLocalVar62 ) + ( tex2D( _Flat, uv_Flat ) * ifLocalVar56 ) ).rgb;
 				float3 Normal = ( ( UnpackNormalScale( tex2D( _CliffNormal, uv_CliffNormal ), 1.0 ) * ifLocalVar62 ) + ( ifLocalVar56 * UnpackNormalScale( tex2D( _FlatNormal, uv_FlatNormal ), 1.0 ) ) );
 				float3 Emission = 0;
-				float3 Specular = 0.5;
+				float3 Specular = temp_cast_3;
 				float Metallic = 0;
-				float Smoothness = 0.5;
+				float Smoothness = 0.0;
 				float Occlusion = 1;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
@@ -2886,6 +2905,7 @@ Shader "TessellatedTerrain"
 			#pragma hull HullFunction
 			#pragma domain DomainFunction
 			#define ASE_DISTANCE_TESSELLATION
+			#define _SPECULAR_SETUP 1
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 130108
 
@@ -2934,6 +2954,7 @@ Shader "TessellatedTerrain"
 			float4 _CliffNormal_ST;
 			float4 _FlatNormal_ST;
 			float _Height;
+			float _Angle;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
 			#endif
@@ -3146,6 +3167,7 @@ Shader "TessellatedTerrain"
 			#pragma hull HullFunction
 			#pragma domain DomainFunction
 			#define ASE_DISTANCE_TESSELLATION
+			#define _SPECULAR_SETUP 1
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 130108
 
@@ -3194,6 +3216,7 @@ Shader "TessellatedTerrain"
 			float4 _CliffNormal_ST;
 			float4 _FlatNormal_ST;
 			float _Height;
+			float _Angle;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
 			#endif
@@ -3418,14 +3441,13 @@ Node;AmplifyShaderEditor.WorldNormalVector;50;-384,-1056;Inherit;False;False;1;0
 Node;AmplifyShaderEditor.DotProductOpNode;51;-128,-1024;Inherit;False;2;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.WorldPosInputsNode;52;-576,-944;Inherit;False;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
 Node;AmplifyShaderEditor.NormalizeNode;53;-352,-864;Inherit;False;False;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0
-Node;AmplifyShaderEditor.RangedFloatNode;57;-144,-896;Inherit;False;Constant;_Float0;Float 0;4;0;Create;True;0;0;0;False;0;False;1;0;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SamplerNode;43;-256,-624;Inherit;True;Property;_TextureSample1;Texture Sample 1;3;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.TexturePropertyNode;42;-494.3816,-642.6184;Inherit;True;Property;_Flat;Flat;2;0;Create;True;0;0;0;False;0;False;None;None;False;white;Auto;Texture2D;-1;0;2;SAMPLER2D;0;SAMPLERSTATE;1
 Node;AmplifyShaderEditor.SamplerNode;59;-112,-1248;Inherit;True;Property;_TextureSample3;Texture Sample 1;3;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.TexturePropertyNode;60;-352,-1264;Inherit;True;Property;_Cliff;Cliff;3;0;Create;True;0;0;0;False;0;False;None;None;False;white;Auto;Texture2D;-1;0;2;SAMPLER2D;0;SAMPLERSTATE;1
 Node;AmplifyShaderEditor.ConditionalIfNode;56;32,-1024;Inherit;False;False;5;0;FLOAT;0;False;1;FLOAT;0.9999;False;2;FLOAT;0;False;3;FLOAT;0;False;4;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.ConditionalIfNode;62;48,-848;Inherit;False;False;5;0;FLOAT;0;False;1;FLOAT;0.9999;False;2;FLOAT;0;False;3;FLOAT;0;False;4;FLOAT;0;False;1;FLOAT;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;12;1249.782,-218.2131;Float;False;True;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;TessellatedTerrain;94348b07e5e8bab40bd6c8a1e3df54cd;True;Forward;0;1;Forward;19;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;3;True;12;all;0;False;True;1;1;False;;0;False;;1;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=UniversalForward;False;False;0;;0;0;Standard;41;Workflow;1;0;Surface;0;0;  Refraction Model;0;0;  Blend;0;0;Two Sided;1;0;Fragment Normal Space,InvertActionOnDeselection;0;0;Forward Only;0;0;Transmission;0;0;  Transmission Shadow;0.5,False,;0;Translucency;0;0;  Translucency Strength;1,False,;0;  Normal Distortion;0.5,False,;0;  Scattering;2,False,;0;  Direct;0.9,False,;0;  Ambient;0.1,False,;0;  Shadow;0.5,False,;0;Cast Shadows;1;0;  Use Shadow Threshold;0;0;Receive Shadows;1;0;GPU Instancing;1;0;LOD CrossFade;1;0;Built-in Fog;1;0;_FinalColorxAlpha;0;0;Meta Pass;1;0;Override Baked GI;0;0;Extra Pre Pass;0;0;DOTS Instancing;0;0;Tessellation;1;638139156719533717;  Phong;0;0;  Strength;0.5,False,;0;  Type;1;638139156756358831;  Tess;32,False,_Tessellation;638139157817138200;  Min;10,False,;0;  Max;25,False,;0;  Edge Length;16,False,;0;  Max Displacement;25,False,;0;Write Depth;0;0;  Early Z;0;0;Vertex Position,InvertActionOnDeselection;1;0;Debug Display;0;0;Clear Coat;0;0;0;10;False;True;True;True;True;True;True;True;True;True;False;;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;12;1249.782,-218.2131;Float;False;True;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;TessellatedTerrain;94348b07e5e8bab40bd6c8a1e3df54cd;True;Forward;0;1;Forward;19;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;3;True;12;all;0;False;True;1;1;False;;0;False;;1;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=UniversalForward;False;False;0;;0;0;Standard;41;Workflow;0;638141043723144631;Surface;0;0;  Refraction Model;0;0;  Blend;0;0;Two Sided;1;0;Fragment Normal Space,InvertActionOnDeselection;0;0;Forward Only;0;0;Transmission;0;0;  Transmission Shadow;0.5,False,;0;Translucency;0;0;  Translucency Strength;1,False,;0;  Normal Distortion;0.5,False,;0;  Scattering;2,False,;0;  Direct;0.9,False,;0;  Ambient;0.1,False,;0;  Shadow;0.5,False,;0;Cast Shadows;1;0;  Use Shadow Threshold;0;0;Receive Shadows;1;0;GPU Instancing;1;0;LOD CrossFade;1;0;Built-in Fog;1;0;_FinalColorxAlpha;0;0;Meta Pass;1;0;Override Baked GI;0;0;Extra Pre Pass;0;0;DOTS Instancing;0;0;Tessellation;1;638139156719533717;  Phong;0;0;  Strength;0.5,False,;0;  Type;1;638139156756358831;  Tess;32,False,_Tessellation;638139157817138200;  Min;10,False,;0;  Max;25,False,;0;  Edge Length;16,False,;0;  Max Displacement;25,False,;0;Write Depth;0;0;  Early Z;0;0;Vertex Position,InvertActionOnDeselection;1;0;Debug Display;0;0;Clear Coat;0;0;0;10;False;True;True;True;True;True;True;True;True;True;False;;False;0
 Node;AmplifyShaderEditor.SamplerNode;46;-496,-432;Inherit;True;Property;_TextureSample2;Texture Sample 1;3;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.UnpackScaleNormalNode;48;-192,-416;Inherit;False;Tangent;2;0;FLOAT4;0,0,0,0;False;1;FLOAT;1;False;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;61;331.5541,-1202.683;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;FLOAT;0;False;1;COLOR;0
@@ -3438,6 +3460,9 @@ Node;AmplifyShaderEditor.SamplerNode;65;-128,-1456;Inherit;True;Property;_Textur
 Node;AmplifyShaderEditor.UnpackScaleNormalNode;67;176,-1440;Inherit;False;Tangent;2;0;FLOAT4;0,0,0,0;False;1;FLOAT;1;False;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
 Node;AmplifyShaderEditor.TexturePropertyNode;47;-736,-449.7823;Inherit;True;Property;_FlatNormal;Flat Normal;4;0;Create;True;0;0;0;False;0;False;None;None;False;white;Auto;Texture2D;-1;0;2;SAMPLER2D;0;SAMPLERSTATE;1
 Node;AmplifyShaderEditor.TexturePropertyNode;66;-368,-1472;Inherit;True;Property;_CliffNormal;Cliff Normal;5;0;Create;True;0;0;0;False;0;False;None;None;False;white;Auto;Texture2D;-1;0;2;SAMPLER2D;0;SAMPLERSTATE;1
+Node;AmplifyShaderEditor.RangedFloatNode;57;-160,-896;Inherit;False;Constant;_One;One;5;0;Create;True;0;0;0;False;0;False;1;1;0;0;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;71;-383,-768;Inherit;False;Property;_Angle;Angle;6;0;Create;True;0;0;0;False;0;False;0.9999;0.9999;-1;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;72;987.1763,-174.1541;Inherit;False;Constant;_Float0;Float 0;7;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0
 WireConnection;22;0;21;0
 WireConnection;23;0;22;1
 WireConnection;23;1;22;2
@@ -3453,12 +3478,16 @@ WireConnection;53;0;52;0
 WireConnection;43;0;42;0
 WireConnection;59;0;60;0
 WireConnection;56;0;51;0
+WireConnection;56;1;71;0
 WireConnection;56;2;57;0
 WireConnection;62;0;51;0
+WireConnection;62;1;71;0
 WireConnection;62;3;57;0
 WireConnection;62;4;57;0
 WireConnection;12;0;64;0
 WireConnection;12;1;69;0
+WireConnection;12;9;72;0
+WireConnection;12;4;72;0
 WireConnection;12;8;27;0
 WireConnection;46;0;47;0
 WireConnection;48;0;46;0
@@ -3477,4 +3506,4 @@ WireConnection;70;1;48;0
 WireConnection;65;0;66;0
 WireConnection;67;0;65;0
 ASEEND*/
-//CHKSM=A9AFDF1BEFC30B23029C72AC0B52105545C04FCF
+//CHKSM=5ADE814984CA5737AE01E6FE7B45C71B51FD1C27
