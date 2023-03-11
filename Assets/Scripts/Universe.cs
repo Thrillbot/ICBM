@@ -2,7 +2,8 @@ using UnityEngine;
 
 public sealed class Universe : MonoBehaviour
 {
-	public static float gravity = -1f;
+	public static float gravity = -9.81f;
+    public static float lostSignalVisualFadeTime = 1;
 
 	public static bool loading = true;
 	public static bool paused = true;
@@ -23,6 +24,13 @@ public sealed class Universe : MonoBehaviour
             }
             return instance;
         }
+    }
+
+    public static bool DistanceCheck(Vector3 from, Vector3 to, float maxDistance)
+    {
+        if ((from - to).sqrMagnitude < maxDistance * maxDistance)
+            return true;
+        return false;
     }
 
     public void Print(string message)

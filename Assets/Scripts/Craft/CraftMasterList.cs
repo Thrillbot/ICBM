@@ -1,42 +1,48 @@
+using Fusion;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Universe;
 
-public class CraftMasterList : MonoBehaviour {
-
-	[System.Serializable]
-	public class Crafts {
-		public GameObject craft;
-		public bool connected;
-		public float lastConnection;
-	}
-	
-	public List<Crafts> crafts = new List<Crafts>();
-	
+public class CraftMasterList : MonoBehaviour
+{
 	public int radioPower;
 
+	public List<Craft> masterCraftList;
+
 	void Update () {
+		if (masterCraftList == null || masterCraftList.Count == 0)
+			return;
+
 		RaycastHit hit;
 
-		for (int i=0;i<crafts.Count;i++) {
-			if (Physics.Linecast(transform.position, crafts[i].craft.transform.position, out hit)) {
-				if (hit.transform.gameObject == crafts[i].craft && DistanceCheck(hit.transform.gameObject)) {
-					crafts[i].craft.GetComponent<Craft>().RadioHit(transform.gameObject);					
-					Debug.DrawLine(transform.position, crafts[i].craft.transform.position, Color.red);
-					crafts[i].connected = true;
-					crafts[i].lastConnection = 0;
+		for (int i=0;i<masterCraftList.Count;i++) {
+			if (Physics.Linecast(transform.position, masterCraftList[i].transform.position, out hit))
+			{
+				if (hit.transform.gameObject == masterCraftList[i].gameObject && DistanceCheck(transform.position, masterCraftList[i].transform.position, radioPower))
+				{
+					masterCraftList[i].GetComponent<Craft>().RadioHit(transform.gameObject);					
+					Debug.DrawLine(transform.position, masterCraftList[i].transform.position, Color.red);
+					masterCraftList[i].connected = true;
+					masterCraftList[i].lastConnection = 0;
 				} else {
-					crafts[i].connected = false;
-					crafts[i].lastConnection++;
+					masterCraftList[i].connected = false;
+					masterCraftList[i].lastConnection += Time.deltaTime;
 				}
 			}
 		}
 	}
-	
-	private bool DistanceCheck (GameObject _checker) {
-		if (Vector3.Distance(_checker.transform.position, transform.position) < radioPower)
-			return true;
-		return false;
-	}	
+
+	public void ConnectCraft (Craft newCraft)
+	{
+		if (masterCraftList == null)
+			masterCraftList = new List<Craft>();
+		masterCraftList.Add(newCraft);
+	}
+
+	public List<Craft> MasterCraftList
+	{
+		get { return masterCraftList; }
+	}
 }
 
