@@ -24,8 +24,10 @@ public class Worldificate : MonoBehaviour
     public Texture2D basePlanet;
     public AnimationCurve temperatureCurve;
     public AnimationCurve humidityCurve;
+    public AnimationCurve yCurve;
     public float[] temperatureScales;
     public float[] humidityScales;
+    public float heightMultiplier = 1;
     [Range(0,1)]
     public float biomeBlending = 0.1f;
     public int tempSeed;
@@ -128,8 +130,10 @@ public class Worldificate : MonoBehaviour
                     foreach (float f in humidityScales)
                         humidity += Perlin.Noise((x * f) + humSeed, (y * f) + humSeed) * temperatureCurve.Evaluate((float)y / (float)resolution);
                     height = temperature * humidity;
+                    height *= heightMultiplier;
 
                     colors[x + y * resolution] += new Color(height, height, height, 1);
+                    colors[x + y * resolution] *= yCurve.Evaluate((float)y / (float)resolution);
                     colors[x + y * resolution] = Color.Lerp(colors[x + y * resolution], colors[y * resolution], ((float)x - (float)resolution + planetWrapOverlap) / planetWrapOverlap);
                 }
             }
