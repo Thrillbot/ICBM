@@ -601,6 +601,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     randomizeRotationDirection: 0
+    gravitySource: 0
     maxNumParticles: 1500
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
@@ -3985,6 +3986,7 @@ ParticleSystem:
         m_RotationOrder: 4
     minVertexDistance: 0.2
     textureMode: 0
+    textureScale: {x: 1, y: 1}
     ribbonCount: 1
     shadowBias: 0.5
     worldSpace: 0
@@ -4920,6 +4922,7 @@ GameObject:
   - component: {fileID: 8628108646751234947}
   - component: {fileID: 5669910218298197225}
   - component: {fileID: 1330098009912004845}
+  - component: {fileID: 2802888338705744274}
   m_Layer: 0
   m_Name: Def_SamMissile
   m_TagString: Untagged
@@ -4953,7 +4956,7 @@ Rigidbody:
   m_GameObject: {fileID: 7924161541184380787}
   serializedVersion: 2
   m_Mass: 1
-  m_Drag: 1
+  m_Drag: 0.001
   m_AngularDrag: 0.05
   m_UseGravity: 1
   m_IsKinematic: 0
@@ -4969,11 +4972,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 7924161541184380787}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52ef4b6d45189f446aff0a0b1204e020, type: 3}
+  m_Script: {fileID: 11500000, guid: 398a6d510e1dc1a4b87db9447ecb7194, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   plume: {fileID: 808917595994898335}
-  turnSpeed: 2
-  thrust: 3
-  fuel: 2500
-  remainAfterGas: 5000
+  turnSpeed: 5
+  thrust: 10
+  fuel: 500
+  remainAfterGas: 4000
+--- !u!114 &2802888338705744274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7924161541184380787}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 022f8fecd72103b4a9446950e1b34f9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

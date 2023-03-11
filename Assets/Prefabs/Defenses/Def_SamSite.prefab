@@ -601,6 +601,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     randomizeRotationDirection: 0
+    gravitySource: 0
     maxNumParticles: 1000
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
@@ -3985,6 +3986,7 @@ ParticleSystem:
         m_RotationOrder: 4
     minVertexDistance: 0.2
     textureMode: 0
+    textureScale: {x: 1, y: 1}
     ribbonCount: 1
     shadowBias: 0.5
     worldSpace: 0
@@ -4855,7 +4857,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2510288825497781590}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bd06817c1a275c4f9a161a35fb61352, type: 3}
+  m_Script: {fileID: 11500000, guid: 2d7c5a228dae2e84188c7f44fba0adb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   missilePrefab: {fileID: 7924161541184380787, guid: d1ed6e37db7a3084cbfb6dfe8b29e9cb, type: 3}
