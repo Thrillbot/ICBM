@@ -94,7 +94,8 @@ public class NetworkCharacterControllerPrototype : NetworkTransform {
       moveVelocity.y = 0f;
     }
 
-    moveVelocity.y += gravity * Runner.DeltaTime;
+    //moveVelocity.y += gravity * Runner.DeltaTime;
+    moveVelocity += transform.position.normalized * Universe.gravity;
 
     var horizontalVel = default(Vector3);
     horizontalVel.x = moveVelocity.x;

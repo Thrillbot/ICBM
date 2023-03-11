@@ -2,7 +2,7 @@ using UnityEngine;
 
 public sealed class Universe : MonoBehaviour
 {
-	public static float gravity = -9.81f;
+	public static float gravity = -1f;
 
 	public static bool loading = true;
 	public static bool paused = true;
