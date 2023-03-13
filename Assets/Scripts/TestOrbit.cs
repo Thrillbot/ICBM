@@ -16,6 +16,7 @@ public class TestOrbit : MonoBehaviour
 
 	void FixedUpdate()
     {
+		/*
 		if (Universe.paused || Universe.loading)
 		{
 			if (!Universe.loading)
@@ -23,14 +24,14 @@ public class TestOrbit : MonoBehaviour
 			rigidbody.isKinematic = true;
 		}
 		else
-		{
+		{*/
 			if (rigidbody.isKinematic)
 			{
 				rigidbody.isKinematic = false;
 				rigidbody.AddForce(initialVelocity);
 			}
 			rigidbody.AddForce(transform.position.normalized * Universe.gravity);
-		}
+		//}
     }
 
 	void OnDrawGizmos()
