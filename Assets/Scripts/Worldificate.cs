@@ -1,156 +1,64 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using UnityEditor;
 using UnityEngine;
 
-[ExecuteInEditMode]
 public class Worldificate : MonoBehaviour
 {
-    public struct Biome
-    {
-        public Texture2D heightMap;
-        public float temperature;
-        public float humidity;
-    }
+	[System.Serializable]
+	public struct PerlinLevel
+	{
+		public float scale;
+		public int seed;
+		public float height;
+		public float exponent;
+		public AnimationCurve heightCurve;
+	}
 
-    public struct Feature
-    {
-        public Texture2D heightMap;
-        public Vector2 location;
-        public int scale;
-    }
+	public GameObject[] chunks;
+	public PerlinLevel[] perlinLevels;
+	public float globalBiomeScale = 25;
+	public float maxHeight = 10;
+	public AnimationCurve yValueCurve;
+	public bool generate;
 
-    public Texture2D basePlanet;
-    public AnimationCurve temperatureCurve;
-    public AnimationCurve humidityCurve;
-    public AnimationCurve yCurve;
-    public float[] temperatureScales;
-    public float[] humidityScales;
-    public float heightMultiplier = 1;
-    [Range(0,1)]
-    public float biomeBlending = 0.1f;
-    public int tempSeed;
-    public int humSeed;
-    public float planetWrapOverlap = 500;
-    public int minFeatures = 10;
-    public int maxFeatures = 100;
-    public float minFeatureSize = 100;
-    public float maxFeatureSize = 3000;
-    public float featureHeight = 0.2f;
-    public Texture2D[] biomes;
+	private Vector3 workerVec;
+	private Vector3 vertexWorldPos;
 
-    public bool generate;
+	private void Update()
+	{
+		if (generate)
+		{
+			foreach (GameObject c in chunks)
+			{
+				GenerateChunk(c);
+			}
 
-    private int resolution;
+			generate = false;
+		}
+	}
 
-    private Texture2D worldTex;
-    private List<Biome> biomeList;
-    private List<Feature> features;
-    private int featureCount;
+	private void GenerateChunk (GameObject chunk)
+	{
+		Vector3[] vertices = chunk.GetComponent<MeshFilter>().mesh.vertices;
+		for (int i = 0; i < vertices.Length; i++)
+		{
+			vertexWorldPos = chunk.transform.TransformPoint(vertices[i]);
+			workerVec = vertexWorldPos.normalized;
 
-    private Color[] colors;
-    private float height = 0;
-    private float temperature = 0;
-    private float humidity = 0;
+			foreach (PerlinLevel p in perlinLevels)
+			{
+				workerVec += vertexWorldPos.normalized * Mathf.Pow(p.heightCurve.Evaluate(Perlin.Noise(vertexWorldPos.x * p.scale + p.seed, vertexWorldPos.y * p.scale + p.seed, vertexWorldPos.z * p.scale + p.seed)), p.exponent) * p.height;
+				workerVec -= vertexWorldPos.normalized;
+			}
+			vertices[i] += chunk.transform.InverseTransformPoint(workerVec * Perlin.Noise(vertexWorldPos.x * globalBiomeScale, vertexWorldPos.y * globalBiomeScale, vertexWorldPos.z * globalBiomeScale)) * yValueCurve.Evaluate(vertices[i].normalized.y);
+		}
+		chunk.GetComponent<MeshFilter>().mesh.vertices = vertices;
 
-    void Update()
-    {
-        if (generate)
-        {
-            resolution = basePlanet.width;
+		chunk.GetComponent<MeshFilter>().mesh.RecalculateBounds();
+		chunk.GetComponent<MeshFilter>().mesh.RecalculateNormals();
+		chunk.GetComponent<MeshFilter>().mesh.RecalculateTangents();
 
-            biomeList = new List<Biome>();
-            features = new List<Feature>();
-
-            colors = basePlanet.GetPixels();
-
-            height = 0;
-            temperature = 0;
-            humidity = 0;
-
-            foreach (Texture2D b in biomes)
-            {
-                Biome tempBiome = new();
-                tempBiome.heightMap = b;
-                try
-                {
-                    tempBiome.temperature = float.Parse(b.name.Split('_')[1]) / 100f;
-                    tempBiome.humidity = float.Parse(b.name.Split('_')[2]) / 100f;
-                }
-                catch
-                {
-                    tempBiome.temperature = 0;
-                    tempBiome.humidity = 0;
-                }
-                biomeList.Add(tempBiome);
-            }
-
-            featureCount = Random.Range(minFeatures, maxFeatures);
-            for (int i = 0; i < featureCount; i++)
-            {
-                Feature tempFeature = new();
-                tempFeature.heightMap = biomes[Random.Range(0, biomes.Length)];
-                tempFeature.location = new Vector2(Random.Range(-1, resolution - 1), Random.Range(-1, resolution - 1));
-                tempFeature.scale = (int)Random.Range(minFeatureSize, maxFeatureSize);
-                features.Add(tempFeature);
-            }
-
-            if (tempSeed == 0)
-            {
-                tempSeed = Random.Range(-999999, 999999);
-            }
-            if (humSeed == 0)
-            {
-                humSeed = Random.Range(-999999, 999999);
-            }
-
-            foreach (Feature f in features)
-            {
-                Color[] hColors = f.heightMap.GetPixels();
-                int fResolution = f.heightMap.width;
-                for (int x = 0; x < f.scale; x++)
-                {
-                    for (int y = 0; y < f.scale; y++)
-                    {
-                        if (((int)f.location.x + x) + ((int)f.location.y + y) * resolution < colors.Length && ((int)f.location.x + x) + ((int)f.location.y + y) * resolution >= 0)
-                            colors[((int)f.location.x + x) + ((int)f.location.y + y) * resolution] += Color.white * ((hColors[(int)((float)x / f.scale * fResolution) + (int)((float)y / f.scale * fResolution) * f.heightMap.width].r * 2f - 1f) * featureHeight);
-                    }
-                }
-            }
-
-            for (int x = 0; x < resolution; x++)
-            {
-                for (int y = 0; y < resolution; y++)
-                {
-                    temperature = 0;
-                    humidity = 0;
-                    foreach (float f in temperatureScales)
-                        temperature += Perlin.Noise((x * f) + tempSeed, (y * f) + tempSeed) * temperatureCurve.Evaluate((float)y / (float)resolution);
-                    foreach (float f in humidityScales)
-                        humidity += Perlin.Noise((x * f) + humSeed, (y * f) + humSeed) * temperatureCurve.Evaluate((float)y / (float)resolution);
-                    height = temperature * humidity;
-                    height *= heightMultiplier;
-
-                    colors[x + y * resolution] += new Color(height, height, height, 1);
-                    colors[x + y * resolution] *= yCurve.Evaluate((float)y / (float)resolution);
-                    colors[x + y * resolution] = Color.Lerp(colors[x + y * resolution], colors[y * resolution], ((float)x - (float)resolution + planetWrapOverlap) / planetWrapOverlap);
-                }
-            }
-
-            worldTex = new(resolution, resolution);
-            worldTex.filterMode = FilterMode.Bilinear;
-            worldTex.SetPixels(colors);
-            worldTex.Apply();
-
-            byte[] itemBGBytes = worldTex.EncodeToPNG();
-            File.WriteAllBytes(Application.dataPath + "/Resources/Planet.png", itemBGBytes);
-
-            DestroyImmediate(worldTex);
-
-            System.GC.Collect();
-
-            generate = false;
-        }
-    }
+		if (chunk.GetComponent<MeshCollider>())
+			chunk.GetComponent<MeshCollider>().sharedMesh = chunk.GetComponent<MeshFilter>().mesh;
+	}
 }
