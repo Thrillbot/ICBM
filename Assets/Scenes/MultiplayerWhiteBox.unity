@@ -775,7 +775,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &611010017
 GameObject:
@@ -1656,7 +1656,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 947ff0cc507009045851904c23595591, type: 3}
       propertyPath: m_RootOrder
-      value: 11
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 947ff0cc507009045851904c23595591, type: 3}
       propertyPath: m_LocalScale.x
@@ -1767,7 +1767,7 @@ Transform:
   - {fileID: 107618401}
   - {fileID: 1024195504}
   m_Father: {fileID: 0}
-  m_RootOrder: 12
+  m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!114 &1479586688
 MonoBehaviour:
@@ -2461,7 +2461,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2080666447
 GameObject:
@@ -2626,7 +2626,11 @@ PrefabInstance:
     - target: {fileID: 1764824634607939944, guid: 2edc817fb1674ee43aea02a0c8c02b68, type: 3}
       propertyPath: planet
       value: 
-      objectReference: {fileID: 802815448}
+      objectReference: {fileID: 1479586686}
+    - target: {fileID: 1764824634607939944, guid: 2edc817fb1674ee43aea02a0c8c02b68, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2312168493098478231, guid: 2edc817fb1674ee43aea02a0c8c02b68, type: 3}
       propertyPath: m_RootOrder
       value: 9
@@ -2675,10 +2679,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Base
       objectReference: {fileID: 0}
+    - target: {fileID: 2978973621751969622, guid: 2edc817fb1674ee43aea02a0c8c02b68, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3197688673730891391, guid: 2edc817fb1674ee43aea02a0c8c02b68, type: 3}
       propertyPath: planet
       value: 
-      objectReference: {fileID: 802815448}
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_AddedGameObjects: []
   m_SourcePrefab: {fileID: 100100000, guid: 2edc817fb1674ee43aea02a0c8c02b68, type: 3}

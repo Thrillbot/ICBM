@@ -12,14 +12,16 @@ public class BaseSpawner : MonoBehaviour {
 			//return;
 
 		RaycastHit hit;
-		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		//Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		Vector3 ray = Input.mousePosition;
+		ray.z = -10;
+		ray = Camera.main.ScreenToWorldPoint(ray);
+		print(ray);
 
-		if (Physics.Raycast(ray, out hit)) {
-			RaycastHit _hit;
-			if (Physics.Linecast(new Vector3(hit.point.x,0,hit.point.z), planet.transform.position, out _hit)) {
-				transform.position = _hit.point;
-				transform.LookAt(hit.transform.position);
-			}
-		}   
+		if (Physics.Linecast(ray, planet.transform.position, out hit)) {
+			transform.position = hit.point;
+			transform.LookAt(ray);
+			Debug.DrawLine(ray, planet.transform.position, Color.green, 10.0f);
+		} 
 	}
 }
