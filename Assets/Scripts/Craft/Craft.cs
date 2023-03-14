@@ -6,7 +6,6 @@ using static Universe;
 
 public class Craft : MonoBehaviour
 {
-
 	private CraftMasterList craftList;
 	public List<GameObject> hitby = new List<GameObject>();
 
@@ -23,6 +22,9 @@ public class Craft : MonoBehaviour
 	
 	void Start () {
 		craftList = FindObjectOfType<CraftMasterList>();
+		if (craftList == null)
+			return;
+
 		craftList.ConnectCraft(this);
 
 		meshRend = GetComponent<MeshRenderer>();
@@ -66,6 +68,24 @@ public class Craft : MonoBehaviour
 	}
 	
 	void FixedUpdate () {
+		if (craftList == null)
+		{
+			craftList = FindObjectOfType<CraftMasterList>();
+
+			if (craftList == null)
+				return;
+
+			craftList.ConnectCraft(this);
+
+			meshRend = GetComponent<MeshRenderer>();
+
+			for (int i = 0; i < craftList.MasterCraftList.Count; i++)
+			{
+				if (craftList.MasterCraftList[i] == this.gameObject)
+					listIndex = i;
+			}
+		}
+
 		if (connLerp > 0)
 			connLerp -= Time.deltaTime / lostSignalVisualFadeTime;
 		else
