@@ -208,7 +208,7 @@ MonoBehaviour:
   UseLegacySharedModeInterpolation: 0
   TargetInterpolationDelay: 0.03
   planet: {fileID: 0}
-  line: {fileID: 2096550198016747746}
+  debug: {fileID: 0}
 --- !u!114 &4119397787990246456
 MonoBehaviour:
   m_ObjectHideFlags: 0
