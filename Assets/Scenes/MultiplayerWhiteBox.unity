@@ -1394,6 +1394,10 @@ PrefabInstance:
       value: Chunk
       objectReference: {fileID: 0}
     - target: {fileID: 1742045248851780129, guid: f3fd938026c716b4197cf5ef1fe8c916, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1742045248851780129, guid: f3fd938026c716b4197cf5ef1fe8c916, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 7690a5bc993c7024fa1c9a7017288eb2, type: 2}
@@ -1636,7 +1640,7 @@ MonoBehaviour:
   sensitivity: 15
   zoomSensitivity: 1000
   axis: {x: 0, y: 0, z: 1}
-  lowerLimits: {x: 100, y: 0, z: 5}
+  lowerLimits: {x: 105, y: 0, z: 8}
   upperLimits: {x: 200, y: 0, z: 22}
   zoomHeight:
     serializedVersion: 2
