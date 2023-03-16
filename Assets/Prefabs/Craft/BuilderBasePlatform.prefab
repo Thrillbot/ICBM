@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 411273898282579808}
   - component: {fileID: 6772759454543555702}
   - component: {fileID: 3584393528792030540}
-  - component: {fileID: 9004414700990666178}
   m_Layer: 6
   m_Name: Mesh
   m_TagString: Untagged
@@ -99,21 +98,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
---- !u!114 &9004414700990666178
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4236436824247823805}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57a2ebc5591ccca45bc180a828e545af, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mounts:
-  - {fileID: 6552772453793744864}
-  fuel: 0
 --- !u!1 &6552772453793744864
 GameObject:
   m_ObjectHideFlags: 0
@@ -154,6 +138,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 281361227887754887}
+  - component: {fileID: 2449620728093654697}
   m_Layer: 0
   m_Name: BuilderBasePlatform
   m_TagString: Untagged
@@ -178,3 +163,17 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2449620728093654697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8057933085381810372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40e9d1bbfd4c17d4080c2ae2f9ab7b0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mounts:
+  - {fileID: 6552772453793744864}

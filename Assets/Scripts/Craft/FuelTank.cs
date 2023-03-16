@@ -5,5 +5,4 @@ using UnityEngine;
 public class FuelTank : CraftPart {
 
     public float fuel;
-
 }

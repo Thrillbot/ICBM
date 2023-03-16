@@ -7,5 +7,5 @@ public class CraftPart : MonoBehaviour {
     public GameObject [] mounts;
 
     private float health;
-
+    private float mass;
 }

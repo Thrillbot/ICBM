@@ -4,13 +4,16 @@ using UnityEngine;
 
 public class Builder : MonoBehaviour {
 
-	public GameObject[] parts; 
+	public Camera cam;
+	public GameObject[] parts;
+    public GameObject gizmoPrefab;
 
-	private GameObject selPart;
+    private Transform selPart;
 	private GameObject curPart;
 	private GameObject closest;
 	private float closestDis;
 	private bool canPlace;
+	private bool oldPart;
 	private int buildMode;
 	private int partIndex;
 
@@ -21,30 +24,28 @@ public class Builder : MonoBehaviour {
 
 	void Start() 
 	{
-		partIndex = 1;
+        gizmoPrefab = Instantiate(gizmoPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        gizmoPrefab.transform.position = new Vector3(10000, 10000, 10000);
+        partIndex = 1;
 		ChangePart();
-	}
+        layer_mask = LayerMask.GetMask("Parts");
+    }
 
 	void Update() 
 	{
-		//RESET
-		closest = null;
+        ray = cam.ScreenPointToRay(Input.mousePosition);
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = cam.nearClipPlane + 15;
+
+        //RESET
+        closest = null;
 		canPlace = false;
 		curPart.transform.position = new Vector3(10000, 10000, 10000);
 
-		/*
-		Vector3 mousePos = Input.mousePosition;
-		mousePos.z = Camera.main.nearClipPlane;
-		mousePos = Camera.main.ScreenToWorldPoint(mousePos);
-		*/
-
-		Vector3 mousePos = Input.mousePosition;
-		mousePos.z = Camera.main.nearClipPlane; 
-		ray = Camera.main.ScreenPointToRay(mousePos);
-
-		if (buildMode == 0 || buildMode == 2)	
+		if (buildMode == 0 || buildMode == 2) 
 		{
-			if (Physics.Raycast(ray, out hit, 1000, layer_mask))
+            curPart.transform.position = cam.ScreenToWorldPoint(mousePos);
+            if (Physics.Raycast(ray, out hit, 1000, layer_mask))
 			{
 				DistanceChecker(hit);
 				if (closest != null)
@@ -77,12 +78,12 @@ public class Builder : MonoBehaviour {
 		}
 		if (Input.GetKeyDown("delete"))
         {
-			print(selPart.transform.root);
-			if (selPart != null && selPart.transform.parent != null && selPart.transform.parent != selPart.transform.root)
+			if (selPart != null && selPart.parent != null && selPart.parent != selPart.root)
 			{
-				GameObject newSel = selPart.transform.parent.parent.gameObject;
-				Destroy(selPart);
-				selPart = newSel;
+				Transform newSel = selPart.parent.parent;
+				GhostChildren();
+				Destroy(selPart.gameObject);
+                MoveGizmoToSelection(newSel);
 			}
 		}
 
@@ -115,7 +116,7 @@ public class Builder : MonoBehaviour {
 
 	void DistanceChecker(RaycastHit hit)
     {
-		CraftPart craftPart = hit.transform.GetComponent<CraftPart>();
+		CraftPart craftPart = hit.transform.parent.GetComponent<CraftPart>();
 		foreach (GameObject mount in craftPart.mounts)
 		{
 			float testDis = Vector3.Distance(hit.point, mount.transform.position);
@@ -149,7 +150,7 @@ public class Builder : MonoBehaviour {
 				SelectPart();
 				break;
 
-			case 2: //Block Mover
+			case 2:
 				break;
 		}
 	}
@@ -160,7 +161,6 @@ public class Builder : MonoBehaviour {
 			Destroy(curPart);
 		curPart = Instantiate(parts[partIndex], new Vector3(0, 0, 0), Quaternion.identity);
 		curPart.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(0f, 0f, 0f, 0.3f);
-		layer_mask = LayerMask.GetMask("Parts");
 	}
 
 	void PlacePart()
@@ -171,15 +171,45 @@ public class Builder : MonoBehaviour {
 		newPart.transform.localPosition = new Vector3(0, 0, 0);
 		newPart.transform.localEulerAngles = new Vector3(0, 0, 0);
 		newPart.transform.GetChild(0).gameObject.layer = LayerMask.NameToLayer("Parts"); ;
-
-		selPart = newPart;
+		if (oldPart)
+		{
+			ChangePart();
+		}
+        MoveGizmoToSelection(newPart.transform);
 	}
 
 	void SelectPart()
     {
 		if (Physics.Raycast(ray, out hit, 1000, layer_mask))
         {
-			print(hit.transform.name);
+            MoveGizmoToSelection(hit.transform.parent);
+            if (hit.transform.parent.parent == null)
+			{
+				buildMode = 0;
+				oldPart = true;
+                gizmoPrefab.transform.position = new Vector3(10000, 10000, 10000);
+                if (curPart != null)
+                    Destroy(curPart);
+                curPart = hit.transform.parent.gameObject;
+            }
         }
+	}
+
+	void MoveGizmoToSelection(Transform partSelection)
+	{
+        selPart = partSelection;
+        gizmoPrefab.transform.position = selPart.position;
+        gizmoPrefab.transform.rotation = selPart.rotation;
+    }
+
+	void GhostChildren()
+	{
+        CraftPart craftPart = selPart.GetComponent<CraftPart>();
+        foreach (GameObject mount in craftPart.mounts)
+        {
+			if (mount.transform.childCount == 0)
+				break;
+			mount.transform.GetChild(0).SetParent(null);
+		}
 	}
 }
