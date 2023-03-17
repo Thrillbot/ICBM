@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Builder : MonoBehaviour
 {
-
 	public Camera cam;
 	public GameObject[] parts;
 	public GameObject gizmoPrefab;
@@ -150,13 +149,14 @@ public class Builder : MonoBehaviour
 		{
 			curPart = null;
 			ChangePart();
-			return;
+            buildMode = 1;
+            return;
 		}
 		switch (buildMode)
 		{
 			case 0: //Block Placer
 				if (canPlace)
-					PlacePart();
+					PlacePart();       //////needs check for collision//////////////////////////////////////////////////478r4yryhwefbwf7gwfhsdlufi
 				break;
 
 			case 1: //Block Selector
@@ -194,7 +194,8 @@ public class Builder : MonoBehaviour
 		{
 			UnGhostinate(newPart.transform);
 			ChangePart();
-		}
+            buildMode = 1;
+        }
 		MoveGizmoToSelection(newPart.transform);
 	}
 
@@ -234,15 +235,7 @@ public class Builder : MonoBehaviour
 			Transform mounted = mount.transform.GetChild(0);
 			if (unParent)
 				mounted.SetParent(null);
-			mounted.GetChild(0).GetComponent<Renderer>().material.color = new Color(0f, 0f, 0f, 0.3f);
-			CraftPart mountPart = mounted.GetComponent<CraftPart>();
-            mountPart.notAttached = true;
-            foreach (GameObject subMount in mountPart.mounts)
-			{
-				if (subMount.transform.childCount == 0)
-					break;
-				GhostChildren(subMount.transform.GetChild(0).transform, false);
-			}
+			GhostChildren(mounted.transform, false);
 		}
 	}
 
@@ -256,15 +249,7 @@ public class Builder : MonoBehaviour
 			if (mount.transform.childCount == 0)
 				break;
 			Transform mounted = mount.transform.GetChild(0);
-			mounted.GetChild(0).GetComponent<Renderer>().material.color = new Color(0f, 0f, 0f, 1f);
-			CraftPart mountPart = mounted.GetComponent<CraftPart>();
-            mountPart.notAttached = false;
-            foreach (GameObject subMount in mountPart.mounts)
-			{
-				if (subMount.transform.childCount == 0)
-					break;
-				UnGhostinate(subMount.transform.GetChild(0).transform);
-			}
+			UnGhostinate(mounted.transform);
 		}
 	}
 }
