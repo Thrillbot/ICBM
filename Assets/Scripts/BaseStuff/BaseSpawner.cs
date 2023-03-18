@@ -15,8 +15,11 @@ public class BaseSpawner : NetworkTransform {
 	}
 
 	void Update() {
-		if (!HasStateAuthority)
+		if (!HasInputAuthority)
+		{
+			print("NO TOUCHY");
 			return;
+		}
 
 		if (!placed)
 		{
