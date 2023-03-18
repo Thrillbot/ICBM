@@ -408,6 +408,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2449620728093654697, guid: ebc2f308545b34949ac499e73adeeaab, type: 3}
+      propertyPath: mounts.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2449620728093654697, guid: ebc2f308545b34949ac499e73adeeaab, type: 3}
+      propertyPath: mounts.Array.data[1]
+      value: 
+      objectReference: {fileID: 1677887869}
     - target: {fileID: 8057933085381810372, guid: ebc2f308545b34949ac499e73adeeaab, type: 3}
       propertyPath: m_Name
       value: BuilderBasePlatform
@@ -537,6 +545,11 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1677887869 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8057933085381810372, guid: ebc2f308545b34949ac499e73adeeaab, type: 3}
+  m_PrefabInstance: {fileID: 1243541121}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1727258402860551352
 GameObject:
   m_ObjectHideFlags: 0
