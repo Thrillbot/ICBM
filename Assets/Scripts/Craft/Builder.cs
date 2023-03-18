@@ -8,6 +8,8 @@ public class Builder : MonoBehaviour
 	public GameObject[] parts;
 	public GameObject gizmoPrefab;
 
+	public float ghostAlpha = 0.3f;
+
 	private Transform selPart;
 	private GameObject curPart;
 	private GameObject closest;
@@ -61,7 +63,17 @@ public class Builder : MonoBehaviour
 		}
 
 		//change this shit to the input system///////////////////////////////////////////////////////////////////////////////////
-		switch (Input.inputString)
+		#region Inputs
+		try
+		{
+            buildMode = int.Parse(Input.inputString)-1;
+		}
+		catch
+		{
+
+		}
+		/*
+        switch (Input.inputString)
 		{
 			case "1":
 				buildMode = 0;
@@ -75,6 +87,7 @@ public class Builder : MonoBehaviour
 				buildMode = 2;
 				break;
 		}
+		*/
 
 		if (Input.GetMouseButtonDown(0))
 		{
@@ -117,6 +130,7 @@ public class Builder : MonoBehaviour
 			}
 			ChangePart();
 		}
+#endregion
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	}
 
@@ -173,23 +187,26 @@ public class Builder : MonoBehaviour
 		if (curPart != null)
 			Destroy(curPart);
 		curPart = Instantiate(parts[partIndex], new Vector3(0, 0, 0), Quaternion.identity);
-		curPart.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(0f, 0f, 0f, 0.3f);
+		Color c = curPart.transform.GetChild(0).GetComponent<Renderer>().material.color;
+        curPart.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(c.r, c.g, c.b, ghostAlpha);
         ghostPartSelected = false;
 	}
 
 	void PlacePart()
 	{
 		GameObject newPart = Instantiate(curPart, new Vector3(0, 0, 0), Quaternion.identity);
-		if (!ghostPartHit)
-		{
-			newPart.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(0f, 0f, 0f, 1f);
-		} else {
+        Color c = curPart.transform.GetChild(0).GetComponent<Renderer>().material.color;
+        if (!ghostPartHit)
+        {
+            curPart.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(c.r, c.g, c.b, 1f);
+        } else {
 			newPart.transform.GetComponent<CraftPart>().notAttached = true;
-		}
+            curPart.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(c.r, c.g, c.b, ghostAlpha);
+        }
         newPart.transform.SetParent(closest.transform);
 		newPart.transform.localPosition = new Vector3(0, 0, 0);
 		newPart.transform.localEulerAngles = new Vector3(0, 0, 0);
-		newPart.transform.GetChild(0).gameObject.layer = LayerMask.NameToLayer("Parts"); ;
+		newPart.transform.GetChild(0).gameObject.layer = LayerMask.NameToLayer("Parts");
 		if (ghostPartSelected)
 		{
 			UnGhostinate(newPart.transform);
@@ -226,12 +243,13 @@ public class Builder : MonoBehaviour
 	void GhostChildren(Transform part, bool unParent)
 	{
 		CraftPart craftPart = part.GetComponent<CraftPart>();
-		part.GetChild(0).GetComponent<Renderer>().material.color = new Color(0f, 0f, 0f, 0.3f);
+        Color c = curPart.transform.GetChild(0).GetComponent<Renderer>().material.color;
+        curPart.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(c.r, c.g, c.b, ghostAlpha);
         craftPart.notAttached = true;
         foreach (GameObject mount in craftPart.mounts)
 		{
 			if (mount.transform.childCount == 0)
-				break;
+				continue;
 			Transform mounted = mount.transform.GetChild(0);
 			if (unParent)
 				mounted.SetParent(null);
@@ -242,12 +260,13 @@ public class Builder : MonoBehaviour
 	void UnGhostinate(Transform part)
 	{
 		CraftPart craftPart = part.GetComponent<CraftPart>();
-		part.GetChild(0).GetComponent<Renderer>().material.color = new Color(0f, 0f, 0f, 1f);
+        Color c = curPart.transform.GetChild(0).GetComponent<Renderer>().material.color;
+        curPart.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(c.r, c.g, c.b, 1f);
         craftPart.notAttached = false;
         foreach (GameObject mount in craftPart.mounts)
 		{
 			if (mount.transform.childCount == 0)
-				break;
+                continue;
 			Transform mounted = mount.transform.GetChild(0);
 			UnGhostinate(mounted.transform);
 		}

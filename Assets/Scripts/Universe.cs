@@ -10,6 +10,8 @@ public sealed class Universe : MonoBehaviour
 
     private static Universe instance = null;
 
+    private static string currentCraft;
+
     private Universe()
     {
     }
