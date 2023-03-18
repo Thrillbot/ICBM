@@ -13,6 +13,7 @@ public class BaseSpawner : NetworkTransform {
 	{
 		origin = transform.position;
 		planet = GameObject.FindWithTag("Terrain");
+		transform.parent = planet.transform;
     }
 
     public override void FixedUpdateNetwork() {
@@ -33,16 +34,21 @@ public class BaseSpawner : NetworkTransform {
 			print(Vector3.Angle(ray.normalized, origin.normalized));
 			if (Vector3.Angle(ray.normalized, origin.normalized) < 22)
 			{
-				if (Physics.Linecast(ray, planet.transform.position, out hit))
+				try
 				{
-                    RpcBasePosition(hit.point - new Vector3(0, 0, hit.point.z));
-                    //transform.position = hit.point - new Vector3(0, 0, hit.point.z);
-                    //transform.LookAt(transform.position * 2f);
-
-                    if (Input.GetButton("Fire1"))
+					if (Physics.Linecast(ray, planet.transform.position, out hit))
 					{
-						placed = true;
+						RpcBasePosition(hit.point - new Vector3(0, 0, hit.point.z));
+
+						if (Input.GetButton("Fire1"))
+						{
+							placed = true;
+						}
 					}
+				}
+				catch
+				{
+
 				}
 			}
 		}

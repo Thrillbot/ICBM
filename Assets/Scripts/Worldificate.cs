@@ -20,6 +20,7 @@ public class Worldificate : MonoBehaviour
 	public float maxHeight = 10;
 	public AnimationCurve yValueCurve;
 	public bool generate;
+	public bool pauseUniverse = true;
 
 	private Vector3 workerVec;
 	private Vector3 vertexWorldPos;
@@ -28,14 +29,21 @@ public class Worldificate : MonoBehaviour
 	{
 		if (generate)
 		{
-			foreach (GameObject c in chunks)
+			Universe.loading = true;
+
+            foreach (GameObject c in chunks)
 			{
 				GenerateChunk(c);
 			}
 
 			generate = false;
-		}
-	}
+
+            Universe.loading = false;
+        }
+
+		Universe.paused = pauseUniverse;
+
+    }
 
 	private void GenerateChunk (GameObject chunk)
 	{
