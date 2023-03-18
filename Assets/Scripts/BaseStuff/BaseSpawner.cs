@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 public class BaseSpawner : NetworkTransform {
 	
 	public GameObject planet;
+	public GameObject builderBase;
 
 	private Vector3 origin;
 	private bool placed;
@@ -42,7 +43,13 @@ public class BaseSpawner : NetworkTransform {
                     if (Input.GetButton("Fire1"))
 					{
 						placed = true;
-					}
+
+                        NetworkObject builder = Runner.Spawn(builderBase, Vector3.zero, Quaternion.identity, Runner.LocalPlayer);
+
+						builder.transform.parent = transform;
+                        builder.transform.localPosition = Vector3.zero;
+                        builder.transform.LookAt(transform.position * 2f);
+                    }
 				}
 			}
 		}

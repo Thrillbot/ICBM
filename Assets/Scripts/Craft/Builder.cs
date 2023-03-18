@@ -27,6 +27,7 @@ public class Builder : MonoBehaviour
 
 	void Start()
 	{
+		cam = Camera.main;
 		gizmoPrefab = Instantiate(gizmoPrefab, new Vector3(0, 0, 0), Quaternion.identity);
 		gizmoPrefab.transform.position = new Vector3(10000, 10000, 10000);
 		partIndex = 1;
