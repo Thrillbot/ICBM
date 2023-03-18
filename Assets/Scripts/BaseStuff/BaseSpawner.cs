@@ -9,7 +9,7 @@ public class BaseSpawner : NetworkTransform {
 	private Vector3 origin;
 	private bool placed;
 
-	private void Start()
+    private void Start()
 	{
 		origin = transform.position;
 		planet = GameObject.FindWithTag("Terrain");
@@ -35,8 +35,9 @@ public class BaseSpawner : NetworkTransform {
 			{
 				if (Physics.Linecast(ray, planet.transform.position, out hit))
 				{
-                    transform.position = hit.point - new Vector3(0, 0, hit.point.z);
-                    transform.LookAt(transform.position * 2f);
+                    RpcBasePosition(hit.point - new Vector3(0, 0, hit.point.z));
+                    //transform.position = hit.point - new Vector3(0, 0, hit.point.z);
+                    //transform.LookAt(transform.position * 2f);
 
                     if (Input.GetButton("Fire1"))
 					{
@@ -46,4 +47,11 @@ public class BaseSpawner : NetworkTransform {
 			}
 		}
 	}
+
+    [Rpc(sources: RpcSources.InputAuthority, targets: RpcTargets.StateAuthority)]
+    public void RpcBasePosition(Vector3 value)
+    {
+        transform.position = value;
+        transform.LookAt(transform.position * 2f);
+    }
 }
