@@ -1,5 +1,6 @@
 using Fusion;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class BaseSpawner : NetworkTransform {
 	
@@ -12,12 +13,11 @@ public class BaseSpawner : NetworkTransform {
 	{
 		origin = transform.position;
 		planet = GameObject.FindWithTag("Terrain");
-	}
+    }
 
-	void Update() {
+    public override void FixedUpdateNetwork() {
 		if (!HasInputAuthority)
 		{
-			print("NO TOUCHY");
 			return;
 		}
 
@@ -35,10 +35,10 @@ public class BaseSpawner : NetworkTransform {
 			{
 				if (Physics.Linecast(ray, planet.transform.position, out hit))
 				{
-					transform.position = hit.point - new Vector3(0, 0, hit.point.z);
-					transform.LookAt(transform.position * 2f);
+                    transform.position = hit.point - new Vector3(0, 0, hit.point.z);
+                    transform.LookAt(transform.position * 2f);
 
-					if (Input.GetButton("Fire1"))
+                    if (Input.GetButton("Fire1"))
 					{
 						placed = true;
 					}
