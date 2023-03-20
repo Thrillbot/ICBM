@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 using static Fusion.NetworkCharacterController;
 
 public class Builder : MonoBehaviour
@@ -16,6 +17,7 @@ public class Builder : MonoBehaviour
 	private GameObject root;
 	private Transform selPart;
 	private GameObject curPart;
+	private Vector3 curPartOffset;
 	private GameObject closest;
 	private float closestDis;
 	private bool canPlace;
@@ -44,8 +46,9 @@ public class Builder : MonoBehaviour
 	void Update()
 	{
 		ray = cam.ScreenPointToRay(Input.mousePosition);
-		Vector3 mousePos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -transform.position.z));
-		mousePos.z = 0;
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = -cam.transform.position.z;
+		cam.ScreenToWorldPoint(mousePos);
 
         //RESET
         closest = null;
@@ -57,15 +60,19 @@ public class Builder : MonoBehaviour
 		{
 			curPart.transform.position = mousePos;
 
-            if (Physics.Raycast(ray, out hit, 1000, layer_mask))
+			if (Physics.Raycast(ray, out hit, 1000, layer_mask))
 			{
 				if (hit.transform.parent.GetComponent<CraftPart>().notAttached)
 					ghostPartHit = true;
 				DistanceChecker(hit);
 				if (closest != null && !CollisionChecker(hit.transform.root, curPart.transform))
+				//if (closest != null && !CollisionChecker(hit.transform.root, curPart.transform) && OffsetPart(hit.transform) != new Vector3(0, 0, 0))
 				{
                     curPart.transform.position = closest.transform.position;
-					curPart.transform.localEulerAngles = closest.transform.eulerAngles;
+					curPart.transform.position += OffsetPart(hit.transform);
+                    print(closest.transform.position);
+					print(OffsetPart(hit.transform));
+					//curPart.transform.localEulerAngles = closest.transform.eulerAngles;
 					canPlace = true;
 				}
 			}
@@ -81,26 +88,19 @@ public class Builder : MonoBehaviour
 		{
 
 		}
-		/*
-		switch (Input.inputString)
-		{
-			case "1":
-				buildMode = 0;
-				break;
-
-			case "2":
-				buildMode = 1;
-				break;
-
-			case "3":
-				buildMode = 2;
-				break;
-		}
-		*/
 
 		if (Input.GetMouseButtonDown(0))
 		{
 			Clicker();
+		}
+		if (Input.GetKeyDown("q"))
+		{
+			curPart.transform.localRotation *= Quaternion.Euler(0, 0, -90);
+		}
+		if (Input.GetKeyDown("e"))
+		{
+			curPart.transform.localRotation *= Quaternion.Euler(0, 0, 90);
+
 		}
 		if (Input.GetKeyDown("delete"))
 		{
@@ -193,7 +193,7 @@ public class Builder : MonoBehaviour
 	{
 		if (curPart != null)
 			Destroy(curPart);
-		curPart = Instantiate(parts[partIndex], new Vector3(0, 0, 0), Quaternion.identity);
+		curPart = Instantiate(parts[partIndex], rootPos, Quaternion.identity);
 		Color c = curPart.transform.GetChild(0).GetComponent<Renderer>().material.color;
 		curPart.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(c.r, c.g, c.b, ghostAlpha);
 		ghostPartSelected = false;
@@ -211,8 +211,8 @@ public class Builder : MonoBehaviour
 			curPart.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(c.r, c.g, c.b, ghostAlpha);
 		}
 		newPart.transform.SetParent(closest.transform);
-		newPart.transform.localPosition = new Vector3(0, 0, 0);
-		newPart.transform.localEulerAngles = new Vector3(0, 0, 0);
+		newPart.transform.position = curPart.transform.position;
+		newPart.transform.localEulerAngles = curPart.transform.localEulerAngles;
 		newPart.transform.GetChild(0).gameObject.layer = LayerMask.NameToLayer("Parts");
 		if (ghostPartSelected)
 		{
@@ -244,7 +244,7 @@ public class Builder : MonoBehaviour
 	{
 		selPart = partSelection;
 		gizmoPrefab.transform.position = selPart.position;
-		gizmoPrefab.transform.rotation = selPart.rotation;
+		//gizmoPrefab.transform.rotation = selPart.rotation;
 	}
 
 	private void GhostChildren(Transform part, bool unParent)
@@ -279,15 +279,15 @@ public class Builder : MonoBehaviour
 		}
 	}
 	private bool CollisionChecker(Transform hit, Transform part)
-    {
-        Collider col = hit.transform.GetChild(0).GetComponent<Collider>();
-        if (col != null)
-        {
-        if  (SubCollisionCheck(col, part))
-            return true;
-        }
+	{
+		Collider col = hit.transform.GetChild(0).GetComponent<Collider>();
+		if (col != null)
+		{
+		if  (SubCollisionCheck(col, part))
+			return true;
+		}
 
-        CraftPart partPart = hit.GetComponent<CraftPart>();
+		CraftPart partPart = hit.GetComponent<CraftPart>();
 		foreach (GameObject np in partPart.mounts)
 		{
 			if (np.transform.childCount == 0)
@@ -295,21 +295,21 @@ public class Builder : MonoBehaviour
 			Transform nextHit = np.transform.GetChild(0);
 			if (CollisionChecker(nextHit, part))
 				return true;
-        }
+		}
 
-        return false;
+		return false;
 	}	
 	
 	private bool SubCollisionCheck(Collider hit, Transform part)
-    {
-        Collider col = part.transform.GetChild(0).GetComponent<Collider>();
-        if (col != null)
-        {
-            if (hit.bounds.Intersects(col.bounds))
-                return true;
-        }
+	{
+		Collider col = part.transform.GetChild(0).GetComponent<Collider>();
+		if (col != null)
+		{
+			if (hit.bounds.Intersects(col.bounds))
+				return true;
+		}
 
-        CraftPart partPart = part.GetComponent<CraftPart>();
+		CraftPart partPart = part.GetComponent<CraftPart>();
 		foreach (GameObject np in partPart.mounts)
 		{
 			if (np.transform.childCount == 0)
@@ -317,8 +317,25 @@ public class Builder : MonoBehaviour
 			Transform nextPart = np.transform.GetChild(0);
 			if (SubCollisionCheck(hit, nextPart))
 				return true;
-        }
+		}
 
-        return false;
+		return false;
+	}
+
+	private Vector3 OffsetPart(Transform checkHit)
+	{
+		CraftPart craftPart = curPart.transform.GetComponent<CraftPart>();
+		foreach (GameObject mount in craftPart.mounts)
+		{
+			if (Physics.Raycast(mount.transform.position, mount.transform.up, out hit, 10, layer_mask))
+			{
+				if (hit.transform == checkHit && mount.transform.childCount == 0)
+				{
+                    return mount.transform.position;
+                }
+			}
+		}
+		print("0");
+		return new Vector3(0, 0, 0);
 	}
 }
