@@ -11,6 +11,8 @@ public sealed class Universe : MonoBehaviour
 
     private static Universe instance = null;
 
+    private static string currentCraft;
+
     private Universe()
     {
     }
@@ -25,6 +27,14 @@ public sealed class Universe : MonoBehaviour
             }
             return instance;
         }
+    }
+
+    public static Vector3 GetMousePointOnPlane()
+    {
+        Vector3 point = Input.mousePosition;
+        point.z = Camera.main.transform.position.z;
+        point = Camera.main.ScreenToWorldPoint(point);
+        return point;
     }
 
     public static bool DistanceCheck(Vector3 from, Vector3 to, float maxDistance)

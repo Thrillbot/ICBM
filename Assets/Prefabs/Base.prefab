@@ -208,7 +208,7 @@ MonoBehaviour:
   UseLegacySharedModeInterpolation: 0
   TargetInterpolationDelay: 0.03
   planet: {fileID: 0}
-  _SetPosition: {x: 0, y: 0, z: 0}
+  builderBase: {fileID: 7138818817768451496, guid: f82abc1eab376fb4192271a7ebd5413f, type: 3}
 --- !u!114 &4119397787990246456
 MonoBehaviour:
   m_ObjectHideFlags: 0
