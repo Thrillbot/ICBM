@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
-using static Fusion.NetworkCharacterController;
+using static Universe;
 
 public class Builder : MonoBehaviour
 {
@@ -45,10 +42,7 @@ public class Builder : MonoBehaviour
 
 	void Update()
 	{
-		ray = cam.ScreenPointToRay(Input.mousePosition);
-        Vector3 mousePos = Input.mousePosition;
-        mousePos.z = -cam.transform.position.z;
-		cam.ScreenToWorldPoint(mousePos);
+		Vector3 mousePos = GetMousePointOnPlane();
 
         //RESET
         closest = null;

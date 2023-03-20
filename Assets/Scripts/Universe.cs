@@ -28,6 +28,14 @@ public sealed class Universe : MonoBehaviour
         }
     }
 
+    public static Vector3 GetMousePointOnPlane()
+    {
+        Vector3 point = Input.mousePosition;
+        point.z = Camera.main.transform.position.z;
+        point = Camera.main.ScreenToWorldPoint(point);
+        return point;
+    }
+
     public static bool DistanceCheck(Vector3 from, Vector3 to, float maxDistance)
     {
         if ((from - to).sqrMagnitude < maxDistance * maxDistance)
