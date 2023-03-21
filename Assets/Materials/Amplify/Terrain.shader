@@ -661,23 +661,19 @@ Shader "Terrain"
 				float4 blendOpDest41 = ( saturate( lerpBlendMode43 ));
 				float time55 = 0.0;
 				float2 voronoiSmoothId55 = 0;
-				float3 break56 = WorldPosition;
-				float2 temp_cast_0 = (break56.x).xx;
-				float2 coords55 = temp_cast_0 * _SnowNoiseScale;
+				float2 coords55 = IN.ase_texcoord8.xy * _SnowNoiseScale;
 				float2 id55 = 0;
 				float2 uv55 = 0;
 				float voroi55 = voronoi55( coords55, time55, id55, uv55, 0, voronoiSmoothId55 );
 				float time57 = 0.0;
 				float2 voronoiSmoothId57 = 0;
-				float2 temp_cast_1 = (break56.y).xx;
-				float2 coords57 = temp_cast_1 * _SnowNoiseScale;
+				float2 coords57 = IN.ase_texcoord8.xy * _SnowNoiseScale;
 				float2 id57 = 0;
 				float2 uv57 = 0;
 				float voroi57 = voronoi57( coords57, time57, id57, uv57, 0, voronoiSmoothId57 );
 				float time58 = 0.0;
 				float2 voronoiSmoothId58 = 0;
-				float2 temp_cast_2 = (break56.z).xx;
-				float2 coords58 = temp_cast_2 * _SnowNoiseScale;
+				float2 coords58 = IN.ase_texcoord8.xy * _SnowNoiseScale;
 				float2 id58 = 0;
 				float2 uv58 = 0;
 				float voroi58 = voronoi58( coords58, time58, id58, uv58, 0, voronoiSmoothId58 );
@@ -1884,23 +1880,19 @@ Shader "Terrain"
 				float4 blendOpDest41 = ( saturate( lerpBlendMode43 ));
 				float time55 = 0.0;
 				float2 voronoiSmoothId55 = 0;
-				float3 break56 = WorldPosition;
-				float2 temp_cast_0 = (break56.x).xx;
-				float2 coords55 = temp_cast_0 * _SnowNoiseScale;
+				float2 coords55 = IN.ase_texcoord4.xy * _SnowNoiseScale;
 				float2 id55 = 0;
 				float2 uv55 = 0;
 				float voroi55 = voronoi55( coords55, time55, id55, uv55, 0, voronoiSmoothId55 );
 				float time57 = 0.0;
 				float2 voronoiSmoothId57 = 0;
-				float2 temp_cast_1 = (break56.y).xx;
-				float2 coords57 = temp_cast_1 * _SnowNoiseScale;
+				float2 coords57 = IN.ase_texcoord4.xy * _SnowNoiseScale;
 				float2 id57 = 0;
 				float2 uv57 = 0;
 				float voroi57 = voronoi57( coords57, time57, id57, uv57, 0, voronoiSmoothId57 );
 				float time58 = 0.0;
 				float2 voronoiSmoothId58 = 0;
-				float2 temp_cast_2 = (break56.z).xx;
-				float2 coords58 = temp_cast_2 * _SnowNoiseScale;
+				float2 coords58 = IN.ase_texcoord4.xy * _SnowNoiseScale;
 				float2 id58 = 0;
 				float2 uv58 = 0;
 				float voroi58 = voronoi58( coords58, time58, id58, uv58, 0, voronoiSmoothId58 );
@@ -2308,23 +2300,19 @@ Shader "Terrain"
 				float4 blendOpDest41 = ( saturate( lerpBlendMode43 ));
 				float time55 = 0.0;
 				float2 voronoiSmoothId55 = 0;
-				float3 break56 = WorldPosition;
-				float2 temp_cast_0 = (break56.x).xx;
-				float2 coords55 = temp_cast_0 * _SnowNoiseScale;
+				float2 coords55 = IN.ase_texcoord2.xy * _SnowNoiseScale;
 				float2 id55 = 0;
 				float2 uv55 = 0;
 				float voroi55 = voronoi55( coords55, time55, id55, uv55, 0, voronoiSmoothId55 );
 				float time57 = 0.0;
 				float2 voronoiSmoothId57 = 0;
-				float2 temp_cast_1 = (break56.y).xx;
-				float2 coords57 = temp_cast_1 * _SnowNoiseScale;
+				float2 coords57 = IN.ase_texcoord2.xy * _SnowNoiseScale;
 				float2 id57 = 0;
 				float2 uv57 = 0;
 				float voroi57 = voronoi57( coords57, time57, id57, uv57, 0, voronoiSmoothId57 );
 				float time58 = 0.0;
 				float2 voronoiSmoothId58 = 0;
-				float2 temp_cast_2 = (break56.z).xx;
-				float2 coords58 = temp_cast_2 * _SnowNoiseScale;
+				float2 coords58 = IN.ase_texcoord2.xy * _SnowNoiseScale;
 				float2 id58 = 0;
 				float2 uv58 = 0;
 				float voroi58 = voronoi58( coords58, time58, id58, uv58, 0, voronoiSmoothId58 );
@@ -3145,23 +3133,19 @@ Shader "Terrain"
 				float4 blendOpDest41 = ( saturate( lerpBlendMode43 ));
 				float time55 = 0.0;
 				float2 voronoiSmoothId55 = 0;
-				float3 break56 = WorldPosition;
-				float2 temp_cast_0 = (break56.x).xx;
-				float2 coords55 = temp_cast_0 * _SnowNoiseScale;
+				float2 coords55 = IN.ase_texcoord8.xy * _SnowNoiseScale;
 				float2 id55 = 0;
 				float2 uv55 = 0;
 				float voroi55 = voronoi55( coords55, time55, id55, uv55, 0, voronoiSmoothId55 );
 				float time57 = 0.0;
 				float2 voronoiSmoothId57 = 0;
-				float2 temp_cast_1 = (break56.y).xx;
-				float2 coords57 = temp_cast_1 * _SnowNoiseScale;
+				float2 coords57 = IN.ase_texcoord8.xy * _SnowNoiseScale;
 				float2 id57 = 0;
 				float2 uv57 = 0;
 				float voroi57 = voronoi57( coords57, time57, id57, uv57, 0, voronoiSmoothId57 );
 				float time58 = 0.0;
 				float2 voronoiSmoothId58 = 0;
-				float2 temp_cast_2 = (break56.z).xx;
-				float2 coords58 = temp_cast_2 * _SnowNoiseScale;
+				float2 coords58 = IN.ase_texcoord8.xy * _SnowNoiseScale;
 				float2 id58 = 0;
 				float2 uv58 = 0;
 				float voroi58 = voronoi58( coords58, time58, id58, uv58, 0, voronoiSmoothId58 );
@@ -3826,7 +3810,6 @@ Node;AmplifyShaderEditor.RangedFloatNode;36;438.5063,-934.5129;Inherit;False;Pro
 Node;AmplifyShaderEditor.TFHCRemapNode;38;832,-1056;Inherit;False;5;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;3;FLOAT;0;False;4;FLOAT;1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.ClampOpNode;51;1040,-1056;Inherit;False;3;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleAddOpNode;54;690.9915,-1168.592;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
-Node;AmplifyShaderEditor.BreakToComponentsNode;56;-352,-1280;Inherit;False;FLOAT3;1;0;FLOAT3;0,0,0;False;16;FLOAT;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT;5;FLOAT;6;FLOAT;7;FLOAT;8;FLOAT;9;FLOAT;10;FLOAT;11;FLOAT;12;FLOAT;13;FLOAT;14;FLOAT;15
 Node;AmplifyShaderEditor.SimpleAddOpNode;60;443.0007,-1400.201;Inherit;False;3;3;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleDivideOpNode;61;625.0007,-1344.201;Inherit;False;2;0;FLOAT;0;False;1;FLOAT;3;False;1;FLOAT;0
 Node;AmplifyShaderEditor.VoronoiNode;55;128,-1409;Inherit;False;0;0;1;0;1;False;1;False;False;False;4;0;FLOAT2;0,0;False;1;FLOAT;0;False;2;FLOAT;1;False;3;FLOAT;0;False;3;FLOAT;0;FLOAT2;1;FLOAT2;2
@@ -3861,16 +3844,12 @@ WireConnection;38;2;39;0
 WireConnection;51;0;38;0
 WireConnection;54;0;61;0
 WireConnection;54;1;37;0
-WireConnection;56;0;15;0
 WireConnection;60;0;55;0
 WireConnection;60;1;57;0
 WireConnection;60;2;58;0
 WireConnection;61;0;60;0
-WireConnection;55;0;56;0
 WireConnection;55;2;62;0
-WireConnection;57;0;56;1
 WireConnection;57;2;62;0
-WireConnection;58;0;56;2
 WireConnection;58;2;62;0
 ASEEND*/
-//CHKSM=C4A7A5B30B5B37203C4092EB0D7CE3CCAB0349B4
+//CHKSM=48DD70093B15DCBD4E2BDE0DE981282A8A9D0E0E

@@ -23,14 +23,14 @@ public class FreeCam : MonoBehaviour
         transform.localEulerAngles += timer * 360f * axis.normalized;
 
         workerVec = cameraTransform.localPosition;
-        workerVec.x += Input.GetAxis("Vertical") * Time.deltaTime * sensitivity;
+        workerVec.y += Input.GetAxis("Vertical") * Time.deltaTime * sensitivity;
         workerVec.z -= Input.GetAxis("Mouse ScrollWheel") * Time.deltaTime * zoomSensitivity;
-        workerVec.x -= (Input.GetAxis("Mouse ScrollWheel") > 0 ? Input.GetAxis("Mouse ScrollWheel") : 0) * Time.deltaTime * zoomSensitivity;
-        /*
-        workerVec.x = Mathf.Clamp(workerVec.x, Mathf.Lerp(lowerLimits.x, upperLimits.x, zoomHeight.Evaluate((workerVec.z - lowerLimits.z) / (upperLimits.z - lowerLimits.z))), upperLimits.x);
-        workerVec.y = 0;
+        workerVec.y -= (Input.GetAxis("Mouse ScrollWheel") > 0 ? Input.GetAxis("Mouse ScrollWheel") : 0) * Time.deltaTime * zoomSensitivity;
+
+        workerVec.x = 0;
+        workerVec.y = Mathf.Clamp(workerVec.y, Mathf.Lerp(lowerLimits.y, upperLimits.y, zoomHeight.Evaluate((workerVec.z - lowerLimits.z) / (upperLimits.z - lowerLimits.z))), upperLimits.y);
         workerVec.z = Mathf.Clamp(workerVec.z, lowerLimits.z, upperLimits.z);
-        */
+        
         cameraTransform.localPosition = workerVec;
     }
 }

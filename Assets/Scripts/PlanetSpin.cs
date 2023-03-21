@@ -9,10 +9,13 @@ public class PlanetSpin : MonoBehaviour
 
     private float timer = 0;
 
-    void Update()
+	private void Start()
     {
         Universe.dayLengthInMinutes = dayLengthInMinutes;
+    }
 
+	void Update()
+    {
         if (Universe.paused || Universe.loading)
             return;
         timer += Time.deltaTime/(Universe.dayLengthInMinutes * 60f);

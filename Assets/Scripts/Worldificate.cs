@@ -1,6 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Universe;
 
 public class Worldificate : MonoBehaviour
 {
@@ -15,10 +15,12 @@ public class Worldificate : MonoBehaviour
 	}
 
 	public GameObject[] chunks;
+	public GameObject[] innerBits;
 	public PerlinLevel[] perlinLevels;
 	public float globalBiomeScale = 25;
 	public float maxHeight = 10;
 	public AnimationCurve yValueCurve;
+	public float planetResolution = 2048;
 	public bool generate;
 	public bool pauseUniverse = true;
 
@@ -29,24 +31,31 @@ public class Worldificate : MonoBehaviour
 	{
 		if (generate)
 		{
-			Universe.loading = true;
+			resolution = planetResolution;
+			loading = true;
+			equator = new Dictionary<int, Vector3>();
+			resolution = 360f / resolution;
 
-            foreach (GameObject c in chunks)
+			for (int i = 0; i < chunks.Length; i++)
+			{
+				GenerateChunk(chunks[i]);
+			}
+			foreach (GameObject c in innerBits)
 			{
 				GenerateChunk(c);
 			}
+			planetTransform = transform.parent;
 
 			generate = false;
+			loading = false;
+		}
 
-            Universe.loading = false;
-        }
-
-		Universe.paused = pauseUniverse;
-
-    }
+		paused = pauseUniverse;
+	}
 
 	private void GenerateChunk (GameObject chunk)
 	{
+		float angle;
 		Vector3[] vertices = chunk.GetComponent<MeshFilter>().mesh.vertices;
 		for (int i = 0; i < vertices.Length; i++)
 		{
@@ -59,6 +68,13 @@ public class Worldificate : MonoBehaviour
 				workerVec -= vertexWorldPos.normalized;
 			}
 			vertices[i] += chunk.transform.InverseTransformPoint(workerVec * Perlin.Noise(vertexWorldPos.x * globalBiomeScale, vertexWorldPos.y * globalBiomeScale, vertexWorldPos.z * globalBiomeScale)) * yValueCurve.Evaluate(vertices[i].normalized.y);
+			if (Mathf.Abs(chunk.transform.TransformPoint(vertices[i]).z) < 0.2f)
+			{
+				angle = Vector3.SignedAngle(Vector3.up, chunk.transform.TransformPoint(vertices[i]).normalized, Vector3.forward);
+				if (angle < 0)
+					angle += 360;
+				equator.TryAdd((int)(angle / resolution), chunk.transform.TransformPoint(vertices[i]));
+			}
 		}
 		chunk.GetComponent<MeshFilter>().mesh.vertices = vertices;
 
@@ -68,5 +84,16 @@ public class Worldificate : MonoBehaviour
 
 		if (chunk.GetComponent<MeshCollider>())
 			chunk.GetComponent<MeshCollider>().sharedMesh = chunk.GetComponent<MeshFilter>().mesh;
+	}
+
+	private void OnDrawGizmos()
+	{
+		if (equator == null)
+			return;
+		Gizmos.color = Color.red;
+		for (int i = 0; i < planetResolution; i++)
+		{
+			Gizmos.DrawSphere(equator.GetValueOrDefault(i), 0.25f);
+		}
 	}
 }

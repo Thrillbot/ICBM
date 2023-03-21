@@ -139,7 +139,7 @@ Material:
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SnowHeight: 102.4
-    - _SnowNoiseScale: 3.76
+    - _SnowNoiseScale: 3.87
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1

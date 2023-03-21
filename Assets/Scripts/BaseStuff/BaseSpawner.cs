@@ -1,22 +1,34 @@
 using Fusion;
 using UnityEngine;
-using UnityEngine.UIElements;
+using static Universe;
 
 public class BaseSpawner : NetworkTransform {
 	
 	public GameObject planet;
+	public Transform debugPoint;
 
-	private Vector3 origin;
+	private Transform pieSlice;
 	private bool placed;
+	private Vector3 workerVec;
+
+	private bool visible;
+
+	[Networked]
+	public bool Visible
+	{
+		get { return visible; }
+		set { visible = value; }
+	}
 
     private void Start()
 	{
-		origin = transform.position;
 		planet = GameObject.FindWithTag("Terrain");
 		transform.parent = planet.transform;
-    }
+		pieSlice = transform.parent;
+	}
 
-    public override void FixedUpdateNetwork() {
+	private void Update()
+	{
 		if (!HasInputAuthority)
 		{
 			return;
@@ -24,40 +36,38 @@ public class BaseSpawner : NetworkTransform {
 
 		if (!placed)
 		{
-			RaycastHit hit;
-			Vector3 ray = Input.mousePosition;
-			ray.y = 1000;
-			ray.z = Camera.main.transform.position.z * 1.5f;
-			ray = Camera.main.ScreenToWorldPoint(ray);
-			ray.z = -1;
+			workerVec = GetMousePointOnPlanet();
+			debugPoint.position = workerVec;
 
-			print(Vector3.Angle(ray.normalized, origin.normalized));
-			if (Vector3.Angle(ray.normalized, origin.normalized) < 22)
+			transform.position = workerVec;
+			transform.LookAt(transform.position * 2f);
+
+			print(Vector3.SignedAngle(workerVec.normalized, pieSlice.forward, Vector3.forward));
+
+			if (Vector3.SignedAngle(workerVec.normalized, pieSlice.forward, Vector3.forward) > 1 && Vector3.SignedAngle(workerVec.normalized, pieSlice.forward, Vector3.forward) < 44)
 			{
-				try
-				{
-					if (Physics.Linecast(ray, planet.transform.position, out hit))
-					{
-						RpcBasePosition(hit.point - new Vector3(0, 0, hit.point.z));
-
-						if (Input.GetButton("Fire1"))
-						{
-							placed = true;
-						}
-					}
-				}
-				catch
-				{
-
-				}
+				WritePosition(transform.position);
+				WriteRotation(transform.rotation);
+				Visible = true;
+			}
+			else
+			{
+				Visible = false;
+			}
+			foreach (MeshRenderer m in GetComponentsInChildren<MeshRenderer>())
+			{
+				m.enabled = Visible;
 			}
 		}
 	}
 
-    [Rpc(sources: RpcSources.InputAuthority, targets: RpcTargets.StateAuthority)]
-    public void RpcBasePosition(Vector3 value)
-    {
-        transform.position = value;
-        transform.LookAt(transform.position * 2f);
-    }
+	public override void FixedUpdateNetwork() {
+		if (!placed)
+		{
+			foreach (MeshRenderer m in GetComponentsInChildren<MeshRenderer>())
+			{
+				m.enabled = Visible;
+			}
+		}
+	}
 }
