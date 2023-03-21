@@ -42,7 +42,8 @@ public class Builder : MonoBehaviour
 
 	void Update()
 	{
-		Vector3 mousePos = GetMousePointOnPlane();
+        Vector3 mousePos = GetMousePointOnPlane();
+        ray = cam.ScreenPointToRay(Input.mousePosition);
 
         //RESET
         closest = null;
@@ -53,21 +54,27 @@ public class Builder : MonoBehaviour
 		if (buildMode == 0 || buildMode == 2)
 		{
 			curPart.transform.position = mousePos;
-
-			if (Physics.Raycast(ray, out hit, 1000, layer_mask))
-			{
-				if (hit.transform.parent.GetComponent<CraftPart>().notAttached)
+            if (Physics.Raycast(ray, out hit, 1000, layer_mask))
+            {
+                if (hit.transform.parent.GetComponent<CraftPart>().notAttached)
 					ghostPartHit = true;
 				DistanceChecker(hit);
-				if (closest != null && !CollisionChecker(hit.transform.root, curPart.transform))
-				//if (closest != null && !CollisionChecker(hit.transform.root, curPart.transform) && OffsetPart(hit.transform) != new Vector3(0, 0, 0))
+                if (closest != null)
 				{
-                    curPart.transform.position = closest.transform.position;
-					curPart.transform.position += OffsetPart(hit.transform);
-                    print(closest.transform.position);
-					print(OffsetPart(hit.transform));
-					//curPart.transform.localEulerAngles = closest.transform.eulerAngles;
-					canPlace = true;
+                    curPart.transform.position = closest.transform.position + OffsetPart(hit.transform);
+					print("cur " + curPart.transform.position);
+					print("clo " + closest.transform.position);
+					print("off " + OffsetPart(hit.transform));
+					/*
+					if (!CollisionChecker(hit.transform.root, curPart.transform) && OffsetPart(hit.transform) != new Vector3(0,0,0))
+					{
+						canPlace = true;
+					} 
+					else
+					{
+                        curPart.transform.position = mousePos;
+                    }
+					*/
 				}
 			}
 		}
@@ -238,7 +245,6 @@ public class Builder : MonoBehaviour
 	{
 		selPart = partSelection;
 		gizmoPrefab.transform.position = selPart.position;
-		//gizmoPrefab.transform.rotation = selPart.rotation;
 	}
 
 	private void GhostChildren(Transform part, bool unParent)
@@ -321,15 +327,13 @@ public class Builder : MonoBehaviour
 		CraftPart craftPart = curPart.transform.GetComponent<CraftPart>();
 		foreach (GameObject mount in craftPart.mounts)
 		{
-			if (Physics.Raycast(mount.transform.position, mount.transform.up, out hit, 10, layer_mask))
+			if ((mount.transform.position - checkHit.transform.position).magnitude <= 0.5f)
 			{
-				if (hit.transform == checkHit && mount.transform.childCount == 0)
-				{
-                    return mount.transform.position;
-                }
+				print("ret val");
+				return mount.transform.localPosition;
 			}
-		}
-		print("0");
-		return new Vector3(0, 0, 0);
+        }
+        print("ret 0");
+        return new Vector3(0, 0, 0);
 	}
 }
