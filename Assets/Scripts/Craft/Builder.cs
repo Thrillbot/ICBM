@@ -61,7 +61,7 @@ public class Builder : MonoBehaviour
 				DistanceChecker(hit);
                 if (closest != null && OffsetPart(hit.transform) != new Vector3(0, 0, 0))
 				{
-					curPart.transform.position = closest.transform.position - OffsetPart(hit.transform);
+					curPart.transform.position = closest.transform.position + OffsetPart(hit.transform);
 					if (!CollisionChecker(hit.transform.root, curPart.transform))
 						canPlace = true;
 				}
@@ -318,11 +318,9 @@ public class Builder : MonoBehaviour
 		{
 			if ((mount.transform.position - checkHit.transform.position).magnitude <= 0.5f)
 			{
-				print("ret val");
-				return mount.transform.localPosition;
+				return new Vector3(Mathf.Abs(mount.transform.localPosition.x), Mathf.Abs(mount.transform.localPosition.y), Mathf.Abs(mount.transform.localPosition.z));
 			}
         }
-        print("ret 0");
         return new Vector3(0, 0, 0);
 	}
 }
