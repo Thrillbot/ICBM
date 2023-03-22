@@ -59,22 +59,11 @@ public class Builder : MonoBehaviour
                 if (hit.transform.parent.GetComponent<CraftPart>().notAttached)
 					ghostPartHit = true;
 				DistanceChecker(hit);
-                if (closest != null)
+                if (closest != null && OffsetPart(hit.transform) != new Vector3(0, 0, 0))
 				{
-                    curPart.transform.position = closest.transform.position + OffsetPart(hit.transform);
-					print("cur " + curPart.transform.position);
-					print("clo " + closest.transform.position);
-					print("off " + OffsetPart(hit.transform));
-					/*
-					if (!CollisionChecker(hit.transform.root, curPart.transform) && OffsetPart(hit.transform) != new Vector3(0,0,0))
-					{
+					curPart.transform.position = closest.transform.position - OffsetPart(hit.transform);
+					if (!CollisionChecker(hit.transform.root, curPart.transform))
 						canPlace = true;
-					} 
-					else
-					{
-                        curPart.transform.position = mousePos;
-                    }
-					*/
 				}
 			}
 		}
