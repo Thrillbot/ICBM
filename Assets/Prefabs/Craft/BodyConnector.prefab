@@ -277,6 +277,9 @@ MonoBehaviour:
   - {fileID: 4061147854828969457}
   - {fileID: 6216190669074186669}
   notAttached: 0
+  health: 100
+  mass: 1
+  GarbageCollectTimer: 1000
 --- !u!114 &-5409785812046804929
 MonoBehaviour:
   m_ObjectHideFlags: 0

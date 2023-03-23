@@ -1,16 +1,19 @@
 using Fusion;
+using Mono.Cecil.Cil;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static System.Net.WebRequestMethods;
 using static Universe;
 
 public class Craft : MonoBehaviour
 {
 	private CraftMasterList craftList;
-	public List<GameObject> hitby = new List<GameObject>();
+	private List<GameObject> hitby = new List<GameObject>();
+    public List<GameObject> craftParts = new List<GameObject>();
+    public List<StagingPart> stages = new List<StagingPart>();
 
-	private MeshRenderer meshRend;
-	public int radioPower = 1;
+	public int radioPower = 0;
 	public bool controlled;
 
 	public bool connected;
@@ -18,7 +21,9 @@ public class Craft : MonoBehaviour
 
 	private bool radioPing;
 	private int listIndex;
-	private float connLerp;
+
+    private float fuelTot;
+    private int curStage;
 	
 	void Start () {
 		craftList = FindObjectOfType<CraftMasterList>();
@@ -26,8 +31,6 @@ public class Craft : MonoBehaviour
 			return;
 
 		craftList.ConnectCraft(this);
-
-		meshRend = GetComponent<MeshRenderer>();
 
 		for (int i = 0; i < craftList.MasterCraftList.Count; i++)
 		{
@@ -38,6 +41,9 @@ public class Craft : MonoBehaviour
 
 	
 	public void RadioHit (GameObject _hitby) {
+		if (radioPower == 0)
+			return;
+
 		hitby.Add(_hitby);
 		
 		if (radioPower > 0 && radioPing == false)
@@ -45,8 +51,6 @@ public class Craft : MonoBehaviour
 		
 		craftList.MasterCraftList[listIndex].connected = true;
 		craftList.MasterCraftList[listIndex].lastConnection = 0;
-		//meshRend.enabled = true;
-		connLerp = 1;
 	}
 	
 	private void RadioOut () {
@@ -66,7 +70,24 @@ public class Craft : MonoBehaviour
 			}
 		}		
 	}
-	
+
+	private void Update()
+	{
+		if (!controlled)
+			return;
+		if (Input.GetKeyDown("space"))   ///////////////////////////////////input///////////////////////////////
+		{
+			if (curStage == 0)
+			{
+				Launch();
+			} 
+			else
+			{
+				Stage();
+			}
+			print("cur stage: " + curStage);
+		}
+	}
 	void FixedUpdate () {
 		if (craftList == null)
 		{
@@ -77,8 +98,6 @@ public class Craft : MonoBehaviour
 
 			craftList.ConnectCraft(this);
 
-			meshRend = GetComponent<MeshRenderer>();
-
 			for (int i = 0; i < craftList.MasterCraftList.Count; i++)
 			{
 				if (craftList.MasterCraftList[i] == this.gameObject)
@@ -86,15 +105,41 @@ public class Craft : MonoBehaviour
 			}
 		}
 
-		if (connLerp > 0)
-			connLerp -= Time.deltaTime / lostSignalVisualFadeTime;
-		else
-		{
-			connLerp = 0;
-		}
-		meshRend.material.color = Color.Lerp(new Color(1f, 1f, 1f, 0f), new Color(1f, 1f, 1f, 1f), connLerp);
 		radioPing = false;
 		hitby.Clear();
-		//meshRend.enabled = false;
+	}
+
+	private void Launch()
+	{
+		foreach (GameObject cp in craftParts)
+		{
+            if (cp == null)
+				continue;
+			if (cp.transform.root != gameObject.transform)
+				Destroy(cp.transform.root.gameObject);
+			if (cp.GetComponent<FuelTank>() != null)
+            {
+				fuelTot += cp.GetComponent<FuelTank>().fuel;
+            }
+			if (cp.GetComponent<StagingPart>() != null)
+			{
+                cp.GetComponent<StagingPart>().OnLaunch();
+				stages.Add(cp.GetComponent<StagingPart>());
+            }			
+			if (cp.GetComponent<NozzlePart>() != null)
+                cp.GetComponent<NozzlePart>().OnLaunch();
+        }
+        craftParts.RemoveAll(s => s == null);
+        curStage++;
+    }
+	
+	private void Stage()
+	{
+		if (curStage <= 10)
+		{
+			foreach (StagingPart sp in stages)
+				sp.OnStage(curStage);
+			curStage++;
+        }
 	}
 }

@@ -212,7 +212,10 @@ MonoBehaviour:
   - {fileID: 6552772453793744864}
   - {fileID: 489837679178432715}
   notAttached: 0
-  fuel: 0
+  health: 100
+  mass: 1
+  GarbageCollectTimer: 1000
+  fuel: 100
 --- !u!114 &-8718435100532079547
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -11,7 +11,7 @@ public class StagingPart : CraftPart
 	public Button inc;
 	public Button dec;
 
-	private int stageNum;
+	public int stageNum = 1;
 
 	public void OnLaunch()
 	{
@@ -23,17 +23,14 @@ public class StagingPart : CraftPart
 	{
 		if (currentStage == stageNum)
 		{
-			for (int i=0;i<mounts.Length;i++)
-			{
-				if (mounts[i].name == "BottomMount")
-					mounts[i].transform.GetChild(0).GetComponent<CraftPart>().PostLaunchDetatch();
-			}
+			DetachChildren();
+			////////play stage bolts blow particle effect//////////////////
 			Destroy(gameObject);
 		}
 	}
 
 	public void Inc()
-    {
+	{
 		int num = Convert.ToInt32(stageText.text);
 		if (num < 10)
 		{
@@ -41,15 +38,15 @@ public class StagingPart : CraftPart
 			stageNum = num;
 			stageText.text = num.ToString();
 		}
-    }	
+	}	
 	public void Dec()
 	{
-        int num = Convert.ToInt32(stageText.text);
+		int num = Convert.ToInt32(stageText.text);
 		if (num > 1)
 		{
 			num--;
 			stageNum = num;
 			stageText.text = num.ToString();
 		}
-    }
+	}
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using static Universe;
 
@@ -11,14 +12,15 @@ public class Builder : MonoBehaviour
 
 	public float ghostAlpha = 0.3f;
 
-	private GameObject root;
+    private GameObject root;
+	private Craft rootCraft;
 	private Transform selPart;
 	private GameObject curPart;
 	private Vector3 curPartOffset;
-	private GameObject closest;
+    private GameObject closest;
 	private float closestDis;
 	private bool canPlace;
-	private bool ghostPartSelected;
+    private bool ghostPartSelected;
 	private bool ghostPartHit;
 	private int buildMode;
 	private int partIndex;
@@ -30,14 +32,21 @@ public class Builder : MonoBehaviour
 
 	void Start()
 	{
-		cam = Camera.main;
-		root = Instantiate(rootPrefab, rootPos, Quaternion.identity);
-		gizmoPrefab = Instantiate(gizmoPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        cam = Camera.main;
+        layer_mask = LayerMask.GetMask("Parts");
+
+        SpawnNewCraft();
+	}
+	void SpawnNewCraft()
+	{
+		root = Instantiate(rootPrefab, new Vector3(0,0,0), Quaternion.identity);
+		root.transform.localPosition = rootPos;
+        root.transform.GetChild(0).gameObject.layer = LayerMask.NameToLayer("Parts");
+        rootCraft = root.GetComponent<Craft>();
+        rootCraft.controlled = true;
+        gizmoPrefab = Instantiate(gizmoPrefab, new Vector3(0, 0, 0), Quaternion.identity);
 		partIndex = 1;
 		ChangePart();
-		layer_mask = LayerMask.GetMask("Parts");
-		closest = root.transform.GetChild(0).gameObject;
-		PlacePart();
 	}
 
 	void Update()
@@ -85,20 +94,21 @@ public class Builder : MonoBehaviour
 		}
 		if (Input.GetKeyDown("q"))
 		{
-			curPart.transform.localRotation *= Quaternion.Euler(0, 0, -90);
+			curPart.transform.rotation *= Quaternion.Euler(0, 0, -90);
 		}
 		if (Input.GetKeyDown("e"))
 		{
-			curPart.transform.localRotation *= Quaternion.Euler(0, 0, 90);
+			curPart.transform.rotation *= Quaternion.Euler(0, 0, 90);
 
 		}
 		if (Input.GetKeyDown("delete"))
 		{
-			if (selPart != null && selPart.parent != null && selPart.parent != selPart.root && !ghostPartSelected)
+			if (selPart != null && selPart.parent != null && selPart != root && !ghostPartSelected)
 			{
 				Transform newSel = selPart.parent.parent;
 				GhostChildren(selPart, true);
-				Destroy(selPart.gameObject);
+                rootCraft.craftParts.Remove(selPart.gameObject);
+                Destroy(selPart.gameObject);
 				MoveGizmoToSelection(newSel);
 			}
 			if (ghostPartSelected)
@@ -158,7 +168,8 @@ public class Builder : MonoBehaviour
 	{
 		if (ghostPartSelected && closest == null)
 		{
-			curPart = null;
+            curPart.transform.GetChild(0).gameObject.layer = LayerMask.NameToLayer("Parts");
+            curPart = null;
 			ChangePart();
 			buildMode = 1;
 			return;
@@ -210,8 +221,12 @@ public class Builder : MonoBehaviour
 			ChangePart();
 			buildMode = 1;
 		}
+		else
+		{
+            rootCraft.craftParts.Add (newPart);
+        }
 		MoveGizmoToSelection(newPart.transform);
-	}
+    }
 
 	private void SelectPart()
 	{
@@ -226,7 +241,8 @@ public class Builder : MonoBehaviour
 				if (curPart != null)
 					Destroy(curPart);
 				curPart = hit.transform.parent.gameObject;
-			}
+                curPart.transform.GetChild(0).gameObject.layer = LayerMask.NameToLayer("Default");
+            }
 		}
 	}
 
@@ -239,8 +255,8 @@ public class Builder : MonoBehaviour
 	private void GhostChildren(Transform part, bool unParent)
 	{
 		CraftPart craftPart = part.GetComponent<CraftPart>();
-		Color c = curPart.transform.GetChild(0).GetComponent<Renderer>().material.color;
-		curPart.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(c.r, c.g, c.b, ghostAlpha);
+		Color c = part.transform.GetChild(0).GetComponent<Renderer>().material.color;
+        part.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(c.r, c.g, c.b, ghostAlpha);
 		craftPart.notAttached = true;
 		foreach (GameObject mount in craftPart.mounts)
 		{
@@ -249,22 +265,22 @@ public class Builder : MonoBehaviour
 			Transform mounted = mount.transform.GetChild(0);
 			if (unParent)
 				mounted.SetParent(null);
-			GhostChildren(mounted.transform, false);
+            GhostChildren(mounted.transform, false);
 		}
 	}
 
 	private void UnGhostinate(Transform part)
 	{
 		CraftPart craftPart = part.GetComponent<CraftPart>();
-		Color c = curPart.transform.GetChild(0).GetComponent<Renderer>().material.color;
-		curPart.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(c.r, c.g, c.b, 1f);
+		Color c = part.transform.GetChild(0).GetComponent<Renderer>().material.color;
+        part.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(c.r, c.g, c.b, 1f);
 		craftPart.notAttached = false;
 		foreach (GameObject mount in craftPart.mounts)
 		{
 			if (mount.transform.childCount == 0)
 				continue;
 			Transform mounted = mount.transform.GetChild(0);
-			UnGhostinate(mounted.transform);
+            UnGhostinate(mounted.transform);
 		}
 	}
 	private bool CollisionChecker(Transform hit, Transform part)
@@ -317,9 +333,7 @@ public class Builder : MonoBehaviour
 		foreach (GameObject mount in craftPart.mounts)
 		{
 			if ((mount.transform.position - checkHit.transform.position).magnitude <= 0.5f)
-			{
-				return new Vector3(Mathf.Abs(mount.transform.localPosition.x), Mathf.Abs(mount.transform.localPosition.y), Mathf.Abs(mount.transform.localPosition.z));
-			}
+				return -mount.transform.localPosition;
         }
         return new Vector3(0, 0, 0);
 	}
