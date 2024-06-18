@@ -1,9 +1,9 @@
-using Fusion;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GunAim : NetworkTransform {
+public class GunAim : MonoBehaviour
+{
 
 	public Transform debugObject;
 	public GameObject crossHair;
@@ -13,8 +13,8 @@ public class GunAim : NetworkTransform {
 	public Vector3 workerVec;
 
 	void Update() {
-		if (!HasStateAuthority)
-			return;
+		//if (!HasStateAuthority)
+		//	return;
 
 		RaycastHit hit;
 		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -33,7 +33,7 @@ public class GunAim : NetworkTransform {
 		}
 	}
 
-	[Rpc(sources: RpcSources.InputAuthority, targets: RpcTargets.StateAuthority)]
+	//[Rpc(sources: RpcSources.InputAuthority, targets: RpcTargets.StateAuthority)]
 	public void RPC_Fire(bool firing)
 	{
 		if (firing)

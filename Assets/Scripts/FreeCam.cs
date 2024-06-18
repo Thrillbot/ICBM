@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 public class FreeCam : MonoBehaviour
@@ -18,9 +19,10 @@ public class FreeCam : MonoBehaviour
     {
         if (Universe.paused || Universe.loading)
             return;
+
         transform.localEulerAngles += axis * Input.GetAxis("Horizontal") * Time.deltaTime * sensitivity;
         timer = Time.deltaTime / (Universe.dayLengthInMinutes * 60f);
-        transform.localEulerAngles += timer * 360f * axis.normalized;
+        //transform.localEulerAngles += timer * 360f * axis.normalized;
 
         workerVec = cameraTransform.localPosition;
         workerVec.y += Input.GetAxis("Vertical") * Time.deltaTime * sensitivity;

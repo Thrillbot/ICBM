@@ -1,4 +1,4 @@
-using Fusion;
+using Mirror;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +8,9 @@ public sealed class Universe
     public static float lostSignalVisualFadeTime = 1;
     public static float dayLengthInMinutes;
 
+    [SyncVar(hook = "SetLoading")]
 	public static bool loading = true;
+	[SyncVar(hook = "SetPaused")]
 	public static bool paused = true;
 
     public static Transform planetTransform;
@@ -20,6 +22,7 @@ public sealed class Universe
 
     private Universe()
     {
+
     }
 
     public static Universe Instance
@@ -42,28 +45,39 @@ public sealed class Universe
         return point;
     }
 
-    public static Vector3 GetMousePointOnPlanet ()
+    [Command]
+    public static Vector3 GetMousePointOnPlanet (Vector3 mousePos)
 	{
-        Vector3 point = GetMousePointOnPlane();
-        point = planetTransform.InverseTransformPoint(point);
+        //Vector3 point = GetMousePointOnPlane();
+		Vector3 point = mousePos;
+		point = planetTransform.InverseTransformPoint(point);
         float angle = Vector3.SignedAngle(point.normalized, Vector3.up, -Vector3.forward);
         if (angle < 0)
             angle += 360f;
         int vertexIndex = (int)(angle / resolution);
         int nextIndex = (int)((angle + resolution) / resolution);
 
-        Vector3 pointOne = equator[vertexIndex];
-        Vector3 pointTwo = equator[nextIndex];
-        if (nextIndex >= equator.Count)
-		{
-            pointTwo = pointOne;
-            pointOne = equator[0];
+        try
+        {
+            Vector3 pointOne = equator[vertexIndex];
+            Vector3 pointTwo = equator[nextIndex];
+            if (nextIndex >= equator.Count)
+            {
+                pointTwo = pointOne;
+                pointOne = equator[0];
+            }
+
+            point = Vector3.Lerp(pointOne, pointTwo, (resolution * nextIndex - resolution * vertexIndex) / resolution);
+            point = planetTransform.TransformPoint(point);
+
+            return point;
+        }
+        catch
+        {
+
         }
 
-        point = Vector3.Lerp(pointOne, pointTwo, (resolution * nextIndex - resolution * vertexIndex) / resolution);
-        point = planetTransform.TransformPoint(point);
-
-        return point;
+        return Vector3.zero;
     }
 
     public static bool DistanceCheck(Vector3 from, Vector3 to, float maxDistance)
@@ -71,5 +85,15 @@ public sealed class Universe
         if ((from - to).sqrMagnitude < maxDistance * maxDistance)
             return true;
         return false;
-    }
+	}
+
+	public static void SetLoading(bool oldValue, bool newValue)
+	{
+		loading = newValue;
+	}
+
+	public static void SetPaused(bool oldValue, bool newValue)
+	{
+		paused = newValue;
+	}
 }

@@ -32,7 +32,7 @@ public class Worldificate : MonoBehaviour
 		if (generate)
 		{
 			resolution = planetResolution;
-			loading = true;
+			SetLoading(false, true);
 			equator = new Dictionary<int, Vector3>();
 			resolution = 360f / resolution;
 
@@ -47,10 +47,10 @@ public class Worldificate : MonoBehaviour
 			planetTransform = transform.parent;
 
 			generate = false;
-			loading = false;
+			SetLoading(true, false);
 		}
 
-		paused = pauseUniverse;
+		SetPaused(!pauseUniverse, pauseUniverse);
 	}
 
 	private void GenerateChunk (GameObject chunk)
