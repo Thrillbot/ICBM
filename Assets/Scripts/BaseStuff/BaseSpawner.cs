@@ -58,7 +58,13 @@ public class BaseSpawner : NetworkBehaviour
 
 			if (debugText == null)
 			{
-				debugText = FindObjectOfType<TMP_Text>();
+				foreach (TMP_Text t in FindObjectsOfType<TMP_Text>()) {
+					if (t.name.Contains("Debug"))
+					{
+						debugText = t;
+						break;
+					}
+				}
 			}
 
 			Transform cam = FindObjectOfType<FreeCam>().transform;

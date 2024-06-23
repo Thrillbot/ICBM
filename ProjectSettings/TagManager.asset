@@ -5,6 +5,11 @@ TagManager:
   serializedVersion: 2
   tags:
   - Terrain
+  - RotatingArea
+  - BuildVolume
+  - LaunchButton
+  - PlayerList
+  - BeingBuilt
   layers:
   - Default
   - TransparentFX

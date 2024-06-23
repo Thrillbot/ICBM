@@ -1,5 +1,3 @@
-using System.Collections;
-using TMPro;
 using UnityEngine;
 
 public class FreeCam : MonoBehaviour
@@ -13,7 +11,6 @@ public class FreeCam : MonoBehaviour
     public AnimationCurve zoomHeight;
 
     private Vector3 workerVec;
-    private float timer = 0;
 
     void Update()
     {
@@ -21,8 +18,6 @@ public class FreeCam : MonoBehaviour
             return;
 
         transform.localEulerAngles += axis * Input.GetAxis("Horizontal") * Time.deltaTime * sensitivity;
-        timer = Time.deltaTime / (Universe.dayLengthInMinutes * 60f);
-        //transform.localEulerAngles += timer * 360f * axis.normalized;
 
         workerVec = cameraTransform.localPosition;
         workerVec.y += Input.GetAxis("Vertical") * Time.deltaTime * sensitivity;
