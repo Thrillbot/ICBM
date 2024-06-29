@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Mirror;
 using Steamworks;
 using TMPro;
@@ -12,6 +13,8 @@ public class SteamLobby : MonoBehaviour
 	public GameObject preGameUI;
 	public string worldSceneName;
 	public TMP_Text playerListText;
+	public GameObject networkCanvas;
+	public string lobbyScene;
 
 	protected Callback<LobbyCreated_t> lobbyCreated;
 	protected Callback<GameLobbyJoinRequested_t> gameLobbyJoinRequested;
@@ -23,6 +26,7 @@ public class SteamLobby : MonoBehaviour
 
 	private void Start()
 	{
+		SceneManager.sceneLoaded += OnSceneLoaded;
 		StartCoroutine(WhileNotInitialized());
 	}
 
@@ -85,6 +89,22 @@ public class SteamLobby : MonoBehaviour
 		if (!NetworkServer.active)
 			return;
 
+		lobbyUI.SetActive(false);
+		preGameUI.SetActive(false);
+
 		networkManager.ServerChangeScene(worldSceneName);
+	}
+
+	void OnSceneLoaded (Scene scene, LoadSceneMode mode)
+	{
+		if (scene.name == lobbyScene)
+		{
+			networkCanvas.SetActive(true);
+		}
+		if (scene.name == worldSceneName)
+		{
+			lobbyUI.SetActive(false);
+			preGameUI.SetActive(false);
+		}
 	}
 }

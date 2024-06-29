@@ -1931,8 +1931,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 761318693}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.000000059604638, y: 0.9659258, z: -0.25881907, w: -0.000000014901159}
-  m_LocalPosition: {x: 0, y: 106, z: 5}
+  m_LocalRotation: {x: -0.86602545, y: -3.2155713e-13, z: -0.00000011920873, w: -0.50000006}
+  m_LocalPosition: {x: 0, y: 5, z: 106}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2507,7 +2507,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 35
+  m_fontSize: 18
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2851,7 +2851,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1479586687}
-  - {fileID: 1260492645}
+  - {fileID: 1673955810}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1124257801
@@ -3007,7 +3007,7 @@ GameObject:
   - component: {fileID: 1260492645}
   - component: {fileID: 1260492644}
   m_Layer: 0
-  m_Name: CameraPivot
+  m_Name: CameraAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3028,9 +3028,9 @@ MonoBehaviour:
   cameraTransform: {fileID: 761318694}
   sensitivity: 15
   zoomSensitivity: 1000
-  axis: {x: 0, y: 0, z: 1}
-  lowerLimits: {x: 0, y: 102, z: 2}
-  upperLimits: {x: 0, y: 200, z: 22}
+  axis: {x: 0, y: 1, z: 0}
+  lowerLimits: {x: 2, y: 2, z: 102}
+  upperLimits: {x: 22, y: 22, z: 200}
   zoomHeight:
     serializedVersion: 2
     m_Curve:
@@ -3063,14 +3063,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1260492643}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 3.996789e-15, y: 0.000000015628455, z: -0.00000011045951, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 761318694}
-  m_Father: {fileID: 1124257800}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Father: {fileID: 1673955810}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
 --- !u!1001 &1302422035
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4605,6 +4605,38 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1673955809
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1673955810}
+  m_Layer: 0
+  m_Name: CameraPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1673955810
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1673955809}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.000000029553021, y: -0.7071069, z: -0.70710677, w: 0.000000067055225}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1260492645}
+  m_Father: {fileID: 1124257800}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: -180}
 --- !u!1 &1769596834
 GameObject:
   m_ObjectHideFlags: 0

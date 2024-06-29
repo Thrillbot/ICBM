@@ -1,6 +1,5 @@
 using Mirror;
 using Rewired;
-using System.Collections;
 using TMPro;
 using UnityEngine;
 using static Universe;
@@ -68,9 +67,8 @@ public class BaseSpawner : NetworkBehaviour
 			}
 
 			Transform cam = FindObjectOfType<FreeCam>().transform;
-			workerVec = cam.localEulerAngles;
-			workerVec.z = pieSlice.transform.localEulerAngles.y;
-			cam.localEulerAngles = workerVec;
+			cam.LookAt(pieSlice.transform.forward);
+			cam.localEulerAngles = new Vector3(0, cam.localEulerAngles.y - 22.5f, 0);
 
 			SetInitialized(false, true);
 		}
@@ -107,7 +105,14 @@ public class BaseSpawner : NetworkBehaviour
 
 		if (isLocalPlayer && !placed)
 		{
-			workerVec = GetMousePointOnPlanet(GetMousePointOnPlane());
+			try
+			{
+				workerVec = GetMousePointOnPlanet(GetMousePointOnPlane());
+			}
+			catch
+			{
+				return;
+			}
 			debugPoint.position = workerVec;
 
 			transform.position = workerVec;
