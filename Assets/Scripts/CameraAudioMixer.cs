@@ -22,8 +22,6 @@ public class CameraAudioMixer : MonoBehaviour
 		airPressure = Mathf.Clamp(airPressure, 0.0f, 1.0f); // Clamp that so we can do a force
 		airPressure = pressureCurve.Evaluate(airPressure);
 
-		Debug.Log("Camera AirPressure: " + airPressure);
-
 		mixer.TransitionToSnapshots(new AudioMixerSnapshot[2] {inAtmoSnapshot, inSpaceSnapshot}, new float[2] { airPressure , 1f - airPressure }, 0);
 	}
 }

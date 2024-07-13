@@ -25,11 +25,13 @@ public class Part : NetworkBehaviour
 	private int playerId = 0;
 	private Transform networkTransform;
 
+	/*
 	[SyncVar(hook = "SyncPosition")]
 	public Vector3 position = Vector3.zero;
 
 	[SyncVar(hook = "SyncRotation")]
 	public Quaternion rotation = Quaternion.identity;
+	*/
 
 	private bool hasAuthority = false;
 
@@ -48,8 +50,8 @@ public class Part : NetworkBehaviour
 	{
 		if (!hasAuthority)
 		{
-			transform.position = position;
-			transform.rotation = rotation;
+			//transform.position = position;
+			//transform.rotation = rotation;
 			return;
 		}
 
@@ -110,10 +112,11 @@ public class Part : NetworkBehaviour
 		}
 
 
-		position = transform.position;
-		rotation = transform.rotation;
+		//position = transform.position;
+		//rotation = transform.rotation;
 	}
 
+	/*
 	private void LateUpdate()
 	{
 		if (networkTransform)
@@ -122,6 +125,7 @@ public class Part : NetworkBehaviour
 			networkTransform.transform.rotation = transform.rotation;
 		}
 	}
+	*/
 
 	public bool isArmed
 	{
@@ -177,8 +181,8 @@ public class Part : NetworkBehaviour
 
 					GetComponent<Part>().attachedCollider = b.currentHitCollider.GetComponent<Collider>();
 				}
-				GetComponent<Part>().position = transform.position;
-				GetComponent<Part>().rotation = transform.rotation;
+				//GetComponent<Part>().position = transform.position;
+				//GetComponent<Part>().rotation = transform.rotation;
 
 				StartCoroutine(Initialize(b));
 				break;
@@ -217,10 +221,11 @@ public class Part : NetworkBehaviour
 
 			GetComponent<Part>().attachedCollider = b.currentHitCollider.GetComponent<Collider>();
 		}
-		GetComponent<Part>().position = transform.position;
-		GetComponent<Part>().rotation = transform.rotation;
+		//GetComponent<Part>().position = transform.position;
+		//GetComponent<Part>().rotation = transform.rotation;
 	}
 
+	/*
 	void SyncPosition(Vector3 oldValue, Vector3 newValue)
 	{
 		if (!isServer)
@@ -236,6 +241,7 @@ public class Part : NetworkBehaviour
 
 		rotation = newValue;
 	}
+	*/
 
 	private void OnDrawGizmos()
 	{

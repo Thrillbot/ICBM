@@ -258,8 +258,8 @@ public class Builder : NetworkBehaviour
 
 				newPart.GetComponent<Part>().attachedCollider = currentHitCollider.GetComponent<Collider>();
 			}
-			newPart.GetComponent<Part>().position = newPart.transform.position;
-			newPart.GetComponent<Part>().rotation = newPart.transform.rotation;
+			//newPart.GetComponent<Part>().position = newPart.transform.position;
+			//newPart.GetComponent<Part>().rotation = newPart.transform.rotation;
 		}
 		catch (Exception e)
 		{
