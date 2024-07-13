@@ -1,6 +1,6 @@
 using Mirror;
 using Rewired;
-using Rewired.Demos;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -8,27 +8,32 @@ using UnityEngine.UI;
 
 public class Builder : NetworkBehaviour
 {
+	public TMP_Text feedbackText;
 	public GameObject launchButton;
 	public bool active;
 	public BoxCollider buildVolume;
 	public Transform launchPad;
 	public LayerMask uiLayers;
+	public GameObject tubeMask;
 
 	public Material ghostMaterial;
+	public GameObject craftHeadPrefab;
 	public GameObject[] parts;
 
-	private List<GameObject> craft;
+	public Collider currentHitCollider;
+
+	public bool debugMode;
+
+	public GameObject craftHead;
+	private List<GameObject> craft;  // To Do: Make this list a thing
 	private int partIndex = 0;
-	private GameObject ghostPart;
-	private List<Material> selectedPartMaterials;
+	public GameObject ghostPart;
 	private Ray ray;
-	private RaycastHit hit;
+	private RaycastHit[] hits;
 	private bool hitHappened;
-	private Vector3 workerVec;
+	private FreeCam cam;
 
-	private bool craftHead;
-
-	public int playerId = 0;
+	private int playerId = 0;
 	private Player player;
 
 	void Awake()
@@ -36,21 +41,28 @@ public class Builder : NetworkBehaviour
 		if (!isLocalPlayer)
 			return;
 
+		cam = GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>();
 		launchButton = GameObject.FindWithTag("LaunchButton");
-		launchButton.GetComponent<Image>().color = Color.red;
-		launchButton.GetComponentInChildren<TMP_Text>().color = Color.white;
-		launchButton.GetComponent<Button>().onClick.AddListener(() => Launch());
-		launchButton.SetActive(false);
+		if (launchButton != null)
+		{
+			launchButton.GetComponent<Image>().color = Color.red;
+			launchButton.GetComponentInChildren<TMP_Text>().color = Color.white;
+			launchButton.GetComponent<Button>().onClick.AddListener(() => Launch());
+			launchButton.SetActive(false);
+		}
 		SpawnGhostPart();
 
 		// Get the Rewired Player object for this player and keep it for the duration of the character's lifetime
 		player = ReInput.players.GetPlayer(playerId);
 	}
 
-	void Update()
+	void LateUpdate()
 	{
 		if (!isLocalPlayer)
+		{
+			Debug.Log("Not Local Player");
 			return;
+		}
 
 		if (player == null)
 		{
@@ -58,38 +70,143 @@ public class Builder : NetworkBehaviour
 		}
 
 		if (player == null)
+		{
+			Debug.Log("No Rewired Player Found");
 			return;
+		}
+
+        if (cam == null)
+		{
+			cam = GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>();
+		}
 
 		if (launchButton == null)
 		{
 			launchButton = GameObject.FindWithTag("LaunchButton");
-			launchButton.GetComponent<Image>().color = Color.red;
-			launchButton.GetComponentInChildren<TMP_Text>().color = Color.white;
-			launchButton.GetComponent<Button>().onClick.AddListener(() => Launch());
-			launchButton.SetActive(false);
-			SpawnGhostPart();
+			if (launchButton != null)
+			{
+				launchButton.GetComponent<Image>().color = Color.red;
+				launchButton.GetComponentInChildren<TMP_Text>().color = Color.white;
+				launchButton.GetComponent<Button>().onClick.AddListener(() => Launch());
+				launchButton.SetActive(false);
+			}
+			if (!ghostPart)
+				SpawnGhostPart();
 		}
 
-		if (launchButton == null || launchButton.GetComponent<MouseOverUI>().MousedOver)
-			return;
+		if (!debugMode)
+		{
+			if (launchButton == null || launchButton.GetComponent<MouseOverUI>().MousedOver)
+				return;
+		}
 
 		ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-		hitHappened = Physics.Raycast(ray.origin, ray.direction, out hit, 1000);
-		if (hitHappened && hit.collider.gameObject.tag == "BuildVolume")
+		hits = Physics.RaycastAll(ray.origin, ray.direction, 1000);
+		hitHappened = false;
+		if (!ghostPart)
+			SpawnGhostPart();
+		ghostPart.SetActive(false);
+		if (hits.Length > 0)
 		{
-			if (!active && player.GetButtonUp("Interact"))
+			foreach (RaycastHit h in hits)
 			{
-				active = true;
-				launchButton.SetActive(true);
-				return;
+				if (h.collider.gameObject.tag == "BuildVolume" || h.collider.gameObject.tag == "BeingBuilt")
+				{
+					if (!active && player.GetButtonUp("Interact"))
+					{
+						active = true;
+						tubeMask.SetActive(true);
+						cam.target = tubeMask.transform;
+						cam.BuildMode = true;
+						if (launchButton != null)
+							launchButton.SetActive(true);
+
+						if (craftHead == null)
+						{
+							CmdSpawnPart(-1, connectionToClient);
+							/*
+							craftHead = Instantiate(craftHeadPrefab);
+							NetworkServer.Spawn(craftHead, connectionToClient);
+							//craftHead = Instantiate(craftHeadPrefab);
+
+							craftHead.transform.parent = transform;
+							craftHead.transform.localEulerAngles = Vector3.zero;
+							craftHead.transform.localScale = Vector3.one * 10f;
+							craftHead.transform.localPosition = new Vector3(0, 0, -1.5f);
+							craftHead.GetComponent<ControlModule>().launchPad = launchPad;
+							*/
+						}
+
+						return;
+					}
+					else if (!active)
+						return;
+
+					hitHappened = true;
+
+					if (h.collider.gameObject.tag == "BeingBuilt")
+					{
+						ghostPart.SetActive(true);
+
+						//ghostPart.transform.position = h.transform.TransformPoint(h.transform.localPosition) - FindPartOffset(h.transform.localPosition, ghostPart.GetComponent<Part>());
+						//ghostPart.transform.position = h.transform.parent.position + h.transform.localPosition.normalized;
+						ghostPart.transform.parent = h.collider.transform.parent;
+						ghostPart.transform.localPosition = FindPartOffset(h.transform.localPosition, ghostPart.GetComponent<Part>(), h.transform);
+
+						ghostPart.transform.localPosition = h.collider.transform.localPosition * 2f;
+
+						ghostPart.transform.LookAt(ghostPart.transform.position + launchPad.up);
+
+						if (player.GetButtonUp("Interact"))
+						{
+							currentHitCollider = h.collider;
+							/*
+							GameObject newPart = Instantiate(parts[partIndex]);
+
+							newPart.transform.parent = h.collider.transform.parent;
+							newPart.transform.SetAsFirstSibling();
+							newPart.transform.localPosition = ghostPart.transform.localPosition;
+							newPart.transform.localRotation = ghostPart.transform.localRotation;
+
+
+							foreach (SphereCollider s in newPart.transform.GetComponentsInChildren<SphereCollider>())
+							{
+								if (Vector3.Dot(s.transform.localPosition.normalized, h.collider.transform.parent.position - s.transform.position) > 0.8f)
+								{
+									s.enabled = false;
+									break;
+								}
+							}
+
+							newPart.GetComponent<Part>().attachedCollider = h.collider;
+							*/
+							CmdSpawnPart(partIndex, connectionToClient);//, ghostPart.transform.localPosition, ghostPart.transform.localRotation, h.collider.GetComponent<NetworkIdentity>());
+							h.collider.enabled = false;
+						}
+					}
+				}
+				else if (h.collider.gameObject != craftHead && h.collider.gameObject.tag == "BeingBuild" && player.GetButtonUp("Interact"))
+				{
+					ghostPart.SetActive(false);
+					ghostPart.transform.parent = launchPad;
+
+					h.collider.gameObject.GetComponent<Part>().attachedCollider.enabled = true;
+
+					CmdDestroyPart(h.collider.gameObject.GetComponent<NetworkIdentity>());
+				}
 			}
 		}
-		else if (!hitHappened || hit.collider.gameObject.tag == "CurrentlyBuilt")
+		if (!hitHappened)
 		{
 			if (active && player.GetButtonUp("Interact"))
 			{
 				active = false;
-				launchButton.SetActive(false);
+				feedbackText.transform.parent.gameObject.SetActive(false);
+				tubeMask.SetActive(false);
+				cam.target = null;
+				cam.BuildMode = false;
+				if (launchButton != null)
+					launchButton.SetActive(false);
 				return;
 			}
 		}
@@ -104,84 +221,83 @@ public class Builder : NetworkBehaviour
 			SpawnGhostPart();
 		}
 
-		ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-		if (Physics.Raycast(ray.origin, ray.direction, out hit, 1000))
+		if (player.GetButtonUp("Launch"))
 		{
-			if (craftHead == false && hit.collider.gameObject.tag == "BuildVolume" && partIndex == 0)
-			{
-				ghostPart.SetActive(true);
-				workerVec = hit.point;
-				workerVec.z = 0;
-				ghostPart.transform.position = workerVec;
-				ghostPart.transform.LookAt(ghostPart.transform.position * 2f);
+			Launch();
+		}
+	}
 
-				if (player.GetButtonUp("Interact"))
-				{
-					craftHead = true;
-					CmdSpawnPart(netId, partIndex, ghostPart.transform.position, ghostPart.transform.rotation, netIdentity.connectionToClient);
-				}
-			}
-			else if (craftHead && hit.collider.name.Contains("attachmentPoint"))
+	public void InitializePart (GameObject newPart)
+	{
+		try
+		{
+			if (newPart.GetComponent<ControlModule>())
 			{
-				ghostPart.SetActive(true);
-				workerVec = launchPad.InverseTransformPoint(hit.point);
-				workerVec.z = 0;
-				workerVec = hit.collider.transform.parent.parent.localPosition - FindPartOffset(hit.collider.transform.parent.parent.gameObject, ghostPart, workerVec - hit.collider.transform.parent.parent.localPosition);
-				workerVec.z = 0;
-				ghostPart.transform.localPosition = workerVec;
-				ghostPart.transform.LookAt(ghostPart.transform.position * 2f);
-
-				if (player.GetButtonUp("Interact"))
-				{
-					CmdSpawnPart(netId, partIndex, ghostPart.transform.position, ghostPart.transform.rotation, netIdentity.connectionToClient);
-				}
+				newPart.transform.parent = transform;
+				newPart.transform.localEulerAngles = Vector3.zero;
+				newPart.transform.localScale = Vector3.one * 10f;
+				newPart.transform.localPosition = new Vector3(0, 0, -1.5f);
+				newPart.GetComponent<ControlModule>().launchPad = launchPad;
+				craftHead = newPart;
 			}
 			else
 			{
-				ghostPart.SetActive(false);
+				newPart.transform.parent = currentHitCollider.transform.parent;
+				newPart.transform.SetAsFirstSibling();
+				newPart.transform.localPosition = ghostPart.transform.localPosition;
+				newPart.transform.localRotation = ghostPart.transform.localRotation;
+
+				foreach (SphereCollider s in newPart.transform.GetComponentsInChildren<SphereCollider>())
+				{
+					if (Vector3.Dot(s.transform.localPosition.normalized, currentHitCollider.transform.parent.position - s.transform.position) > 0.8f)
+					{
+						s.enabled = false;
+						break;
+					}
+				}
+
+				newPart.GetComponent<Part>().attachedCollider = currentHitCollider.GetComponent<Collider>();
 			}
+			newPart.GetComponent<Part>().position = newPart.transform.position;
+			newPart.GetComponent<Part>().rotation = newPart.transform.rotation;
 		}
-		else
+		catch (Exception e)
 		{
-			ghostPart.SetActive(false);
+			Debug.LogError(e);
 		}
 	}
 
-	Vector3 FindPartOffset(GameObject targetedPart, GameObject ghostPart, Vector3 direction)
+	[Command(requiresAuthority = false)]
+	void CmdSpawnPart (int index, NetworkConnectionToClient conn)//, Vector3 pos, Quaternion rot, NetworkIdentity col)
 	{
-		Vector3 offset = Vector3.zero;
-		if (Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
-		{
-			offset = Vector3.right * targetedPart.GetComponent<BoxCollider>().bounds.size.x * 0.5f + Vector3.right * ghostPart.GetComponent<BoxCollider>().bounds.size.x * 0.5f;
-			offset *= Mathf.Sign(direction.x);
-		}
+		GameObject newPart;
+		if (index == -1)
+			newPart = Instantiate(craftHeadPrefab);
 		else
-		{
-			offset = Vector3.up * targetedPart.GetComponent<BoxCollider>().bounds.size.y * Mathf.Sign(direction.y) * 0.5f + Vector3.right * ghostPart.GetComponent<BoxCollider>().bounds.size.y * Mathf.Sign(direction.y) * 0.5f;
-		}
-
-		return offset;
-	}
-
-	[Command]
-	void CmdSpawnPart(uint padID, int index, Vector3 pos, Quaternion rot, NetworkConnectionToClient conn = null)
-	{
-		if (conn == null)
-			return;
-		GameObject newPart = Instantiate(parts[index], pos, rot);
+			newPart = Instantiate(parts[index]);
 		NetworkServer.Spawn(newPart, conn);
-
-		ParentPart(padID, newPart);
+		newPart.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
 	}
 
-	[ClientRpc]
-	void ParentPart (uint padID, GameObject newPart)
+	[Command(requiresAuthority = false)]
+	void CmdDestroyPart (NetworkIdentity netID)
 	{
-		foreach (NetworkIdentity n in FindObjectsOfType<NetworkIdentity>())
+		NetworkServer.Destroy(netID.gameObject);
+	}
+
+	Vector3 FindPartOffset(Vector3 direction, Part part, Transform hit)
+	{
+		direction = direction.normalized;
+		Vector3 offset;
+		if (Mathf.Abs(direction.x) > Mathf.Abs(direction.z))
 		{
-			if (n.netId == padID)
-				newPart.transform.parent = n.transform;
+			offset = hit.parent.forward * part.dimensions.x * 0.5f * Mathf.Sign(direction.x);
 		}
+		else
+		{
+			offset = hit.parent.up * part.dimensions.y * 0.5f * Mathf.Sign(direction.z);
+		}
+		return offset * part.transform.localScale.x;
 	}
 
 	void SpawnGhostPart ()
@@ -189,20 +305,57 @@ public class Builder : NetworkBehaviour
 		if (ghostPart != null)
 			Destroy(ghostPart);
 		ghostPart = Instantiate(parts[partIndex]);
+		Destroy(ghostPart.GetComponent<NetworkIdentity>());
 		ghostPart.transform.parent = launchPad;
 
-		selectedPartMaterials ??= new();
-		selectedPartMaterials.Clear();
 		for (int i = 0; i < ghostPart.GetComponentsInChildren<Renderer>().Length; i++)
 		{
-			selectedPartMaterials.Add(ghostPart.GetComponentsInChildren<Renderer>()[i].material);
-			ghostPart.GetComponentsInChildren<Renderer>()[i].material = ghostMaterial;
+			if (!ghostPart.GetComponentsInChildren<Renderer>()[i].name.Contains("RenderVolume")) {
+				ghostPart.GetComponentsInChildren<Renderer>()[i].material = ghostMaterial;
+			}
+		}
+		for (int i = 0; i < ghostPart.GetComponentsInChildren<Collider>().Length; i++)
+		{
+			Destroy(ghostPart.GetComponentsInChildren<Collider>()[i]);
 		}
 	}
 
 	public void Launch ()
 	{
-		Debug.Log("LAUNCH DETECTED!");
+		feedbackText.text = "";
+		string feedback = "";
+		bool hasFuel = craftHead.transform.GetComponentsInChildren<FuelTank>().Length != 0;
+		bool hasThrust = craftHead.transform.GetComponentsInChildren<Thruster>().Length != 0;
+
+		if (!hasFuel)
+		{
+			feedback += "Craft has no fuel!\n";
+		}
+		if (!hasThrust)
+		{
+			feedback += "Craft has no thrusters!\n";
+		}
+
+        if (feedback != "")
+		{
+			feedbackText.transform.parent.gameObject.SetActive(true);
+			feedbackText.text = feedback;
+			return;
+		}
+
+		craftHead.transform.parent = null;
+		craftHead.GetComponent<Rigidbody>().isKinematic = false;
+
+		ghostPart.transform.parent = null;
+		ghostPart.SetActive(false);
+
+		cam.target = craftHead.transform;
+		active = false;
+		feedbackText.transform.parent.gameObject.SetActive(false);
+		tubeMask.SetActive(false);
+		cam.BuildMode = false;
+		if (launchButton != null)
+			launchButton.SetActive(false);
 	}
 
 	public void DeleteCraft ()

@@ -11,8 +11,7 @@ public class GameManager : NetworkBehaviour
 	[SyncVar(hook = "SetNoiseOffset")]
 	private Vector3 noiseOffset;
 
-	public float dayLengthInMinutes = 60;
-
+	public static Transform baseLocation;
 
 	private void Start()
 	{
@@ -20,7 +19,7 @@ public class GameManager : NetworkBehaviour
 			perlinNoiseSeed = Random.Range(int.MinValue, int.MaxValue);
 		SetSeed(0, perlinNoiseSeed);
 		Random.InitState(perlinNoiseSeed);
-		noiseOffset = new Vector3(Random.Range(999, 999999), Random.Range(999, 999999), Random.Range(999, 999999));
+		noiseOffset = new Vector3(Random.Range(999, 99999), Random.Range(999, 99999), Random.Range(999, 99999));
 		SetNoiseOffset(Vector2.zero, noiseOffset);
 	}
 
@@ -29,7 +28,7 @@ public class GameManager : NetworkBehaviour
         if (!isServer)
             return;
 
-		SetGameTime(gameTime, gameTime + Time.deltaTime / (dayLengthInMinutes * 60f));
+		SetGameTime(gameTime, gameTime + Time.deltaTime / (Universe.dayLengthInMinutes * 60f));
 	}
 
 	void SetGameTime(float oldValue, float newValue)
@@ -58,6 +57,11 @@ public class GameManager : NetworkBehaviour
 			return;
 
 		noiseOffset = newValue;
+	}
+
+	public void FocusBase ()
+	{
+		GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>().Focus(baseLocation, 5);
 	}
 
 	public float GameTime

@@ -11,6 +11,6 @@ public class Gravity : MonoBehaviour
 
 	void FixedUpdate()
     {
-		rigidbody.AddForce(transform.position.normalized * Universe.gravity);
+		rigidbody.AddForce(transform.position.normalized * Universe.Gravity);
 	}
 }

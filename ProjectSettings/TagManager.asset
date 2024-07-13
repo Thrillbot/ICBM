@@ -10,6 +10,7 @@ TagManager:
   - LaunchButton
   - PlayerList
   - BeingBuilt
+  - FreeCam
   layers:
   - Default
   - TransparentFX

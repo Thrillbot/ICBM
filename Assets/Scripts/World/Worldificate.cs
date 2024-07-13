@@ -20,13 +20,17 @@ public class Worldificate : MonoBehaviour
 	public float globalBiomeScale = 25;
 	public float maxHeight = 10;
 	public AnimationCurve yValueCurve;
-	public float planetResolution = 2048;
 	public bool generate;
 	public bool pauseUniverse = true;
 
 	private Vector3 workerVec;
 	private Vector3 vertexWorldPos;
 	private Vector3 noiseOffset;
+
+	private void Start()
+	{
+		Planet = gameObject;
+	}
 
 	private void Update()
 	{
@@ -46,10 +50,9 @@ public class Worldificate : MonoBehaviour
 				return;
 			}
 
-			resolution = planetResolution;
 			SetLoading(false, true);
 			equator = new Dictionary<int, Vector3>();
-			resolution = 360f / resolution;
+			planetResolution = 360f / planetResolution;
 
 			for (int i = 0; i < chunks.Length; i++)
 			{
@@ -89,7 +92,7 @@ public class Worldificate : MonoBehaviour
 				angle = Vector3.SignedAngle(Vector3.up, chunk.transform.TransformPoint(vertices[i]).normalized, Vector3.forward);
 				if (angle < 0)
 					angle += 360;
-				equator.TryAdd((int)(angle / resolution), chunk.transform.TransformPoint(vertices[i]));
+				equator.TryAdd((int)(angle / planetResolution), chunk.transform.TransformPoint(vertices[i]));
 			}
 
 			if (i == vertices.Length/2f)
@@ -106,6 +109,13 @@ public class Worldificate : MonoBehaviour
 
 		if (chunk.GetComponent<MeshCollider>())
 			chunk.GetComponent<MeshCollider>().sharedMesh = chunk.GetComponent<MeshFilter>().mesh;
+	}
+
+	public float GetHeight ()
+	{
+
+
+		return 0;
 	}
 
 	private void OnDrawGizmos()

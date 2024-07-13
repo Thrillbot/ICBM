@@ -57,6 +57,7 @@ namespace Mirror.Examples.Basic
 			{
 				Transform startPos = GetStartPosition();
 				GameObject player = Instantiate(basePrefab, startPos.position, startPos.rotation);
+				player.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
 				//NetworkServer.Spawn(player, conn);
 
 

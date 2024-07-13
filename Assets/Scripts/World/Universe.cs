@@ -4,9 +4,7 @@ using UnityEngine;
 
 public sealed class Universe
 {
-	public static float gravity = -9.81f;
     public static float lostSignalVisualFadeTime = 1;
-    public static float dayLengthInMinutes;
 
     [SyncVar(hook = "SetLoading")]
 	public static bool loading = true;
@@ -16,9 +14,16 @@ public sealed class Universe
     public static Transform planetTransform;
     public static Dictionary<int, Vector3> equator;
 
-    public static float resolution;
+	public static float planetResolution = 2048;
 
-    private static Universe instance = null;
+	public static float dayLengthInMinutes = 60;
+
+	private static GameObject planet;
+	private static float gravity = -0.1f;
+	private static float seaLevel = 100f;
+    private static float karmanLine = 25f;
+
+	private static Universe instance = null;
 
     private Universe()
     {
@@ -46,16 +51,15 @@ public sealed class Universe
     }
 
     [Command]
-    public static Vector3 GetMousePointOnPlanet (Vector3 mousePos)
+    public static Vector3 GetPointOnPlanet (Vector3 pos)
 	{
-        //Vector3 point = GetMousePointOnPlane();
-		Vector3 point = mousePos;
+		Vector3 point = pos;
 		point = planetTransform.InverseTransformPoint(point);
         float angle = Vector3.SignedAngle(point.normalized, Vector3.up, -Vector3.forward);
         if (angle < 0)
             angle += 360f;
-        int vertexIndex = (int)(angle / resolution);
-        int nextIndex = (int)((angle + resolution) / resolution);
+        int vertexIndex = (int)(angle / planetResolution);
+        int nextIndex = (int)((angle + planetResolution) / planetResolution);
 
         try
         {
@@ -67,7 +71,7 @@ public sealed class Universe
                 pointOne = equator[0];
             }
 
-            point = Vector3.Lerp(pointOne, pointTwo, (resolution * nextIndex - resolution * vertexIndex) / resolution);
+            point = Vector3.Lerp(pointOne, pointTwo, (planetResolution * nextIndex - planetResolution * vertexIndex) / planetResolution);
             point = planetTransform.TransformPoint(point);
 
             return point;
@@ -96,4 +100,25 @@ public sealed class Universe
 	{
 		paused = newValue;
 	}
+
+	public static GameObject Planet
+	{
+		set { planet = value; }
+		get { return planet; }
+	}
+
+	public static float Gravity
+	{
+		get { return gravity; }
+	}
+
+	public static float SeaLevel
+	{
+		get { return seaLevel; }
+	}
+
+    public static float KarmanLine
+    {
+        get { return karmanLine; }
+    }
 }

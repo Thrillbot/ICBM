@@ -8,7 +8,6 @@ public class BaseSpawner : NetworkBehaviour
 {
 
 	public GameObject planet;
-	public Transform debugPoint;
 	[SyncVar(hook = "SetPieSlice")]
 	public Transform pieSlice;
 	public int playerId = 0;
@@ -29,6 +28,8 @@ public class BaseSpawner : NetworkBehaviour
 	{
 		// Get the Rewired Player object for this player and keep it for the duration of the character's lifetime
 		player = ReInput.players.GetPlayer(playerId);
+
+		GameManager.baseLocation = transform;
 	}
 
 	public bool Visible
@@ -97,8 +98,8 @@ public class BaseSpawner : NetworkBehaviour
 
 	private void Update()
 	{
-        if (isLocalPlayer)
-			debugText.text = "Initialized = " + initialized;
+        //if (isLocalPlayer)
+		//	debugText.text = "Initialized = " + initialized;
 
 		if (!isLocalPlayer || !initialized)
 			return;
@@ -107,18 +108,21 @@ public class BaseSpawner : NetworkBehaviour
 		{
 			try
 			{
-				workerVec = GetMousePointOnPlanet(GetMousePointOnPlane());
+				workerVec = GetPointOnPlanet(GetMousePointOnPlane());
 			}
 			catch
 			{
 				return;
 			}
-			debugPoint.position = workerVec;
 
 			transform.position = workerVec;
 			transform.LookAt(transform.position * 2f);
+			workerVec = transform.localEulerAngles;
+			workerVec.z = 90;
+			transform.localEulerAngles = workerVec;
 
-			debugText.text = workerVec.ToString() + " | " + pieSlice.forward;
+			workerVec = GetPointOnPlanet(GetMousePointOnPlane());
+			//debugText.text = workerVec.ToString() + " | " + pieSlice.forward;
 
 			if (Vector3.SignedAngle(workerVec.normalized, pieSlice.forward, Vector3.forward) > 1 && Vector3.SignedAngle(workerVec.normalized, pieSlice.forward, Vector3.forward) < 44)
 			{
