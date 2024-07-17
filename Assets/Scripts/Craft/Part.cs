@@ -91,7 +91,6 @@ public class Part : NetworkBehaviour
 
 			// Calculate desired surface velocity at the current position
 			float surfaceSpeed = angularVelocity * Universe.SeaLevel * Mathf.Cos(Mathf.Asin(localUp.y));
-			Vector3 desiredSurfaceVelocity = localRight * surfaceSpeed;
 
 			// Calculate the current velocity component along the tangent
 			float currentTangentSpeed = Vector3.Dot(rootRigidbody.velocity, localRight);
@@ -102,9 +101,14 @@ public class Part : NetworkBehaviour
 			// Apply force based on the difference
 			float forceMagnitude = airPressure * speedDifference * drag;
 			rootRigidbody.AddForce(localRight * forceMagnitude);
+
+			// Lift (Up/Down) based on alignment of forward vector and velocity times by air pressure
+			rootRigidbody.AddForce(Vector3.Cross(transform.right, rootRigidbody.velocity) * (Vector3.Dot(transform.forward, rootRigidbody.velocity)) * airPressure * airPressure * 0.025f);
+			ApplyTorqueToAlignWithVelocity();
 		}
 
 		rootRigidbody.AddForce(-rootRigidbody.velocity * airPressure * drag); // Apply drag
+
 
 		if (!armed && transform.position.sqrMagnitude > Universe.GetPointOnPlanet(transform.position).sqrMagnitude)
 		{
@@ -115,6 +119,39 @@ public class Part : NetworkBehaviour
 		//position = transform.position;
 		//rotation = transform.rotation;
 	}
+
+	void ApplyTorqueToAlignWithVelocity()
+	{
+		Vector3 velocityDirection = rootRigidbody.velocity.normalized;
+		Vector3 forwardDirection = transform.forward;
+
+		// Calculate the angle between forward direction and velocity
+		float angle = Vector3.Angle(forwardDirection, velocityDirection);
+
+		// Calculate the rotation axis
+		Vector3 rotationAxis = Vector3.Cross(forwardDirection, velocityDirection).normalized;
+
+		// Include the magnitude of the velocity in the torque calculation
+		float velocityMagnitude = rootRigidbody.velocity.magnitude;
+
+		// Proportional torque
+		Vector3 proportionalTorque = rotationAxis * angle * airPressure * airPressure * velocityMagnitude;
+
+		// Calculate angular velocity around the right axis (for dampening)
+		Vector3 angularVelocity = rootRigidbody.angularVelocity;
+		float angularVelocityRight = Vector3.Dot(angularVelocity, transform.right);
+
+		// Derivative torque (dampening)
+		float dampeningCoefficient = 0.4f; // Adjust this value as needed
+		Vector3 derivativeTorque = -angularVelocityRight * transform.right * dampeningCoefficient;
+
+		// Total torque
+		Vector3 totalTorque = proportionalTorque + derivativeTorque;
+
+		// Apply torque
+		rootRigidbody.AddTorque(totalTorque * 0.1f);
+	}
+
 
 	/*
 	private void LateUpdate()
@@ -183,8 +220,14 @@ public class Part : NetworkBehaviour
 				}
 				//GetComponent<Part>().position = transform.position;
 				//GetComponent<Part>().rotation = transform.rotation;
+				try
+				{
+					StartCoroutine(Initialize(b));
+				}
+				catch
+				{
 
-				StartCoroutine(Initialize(b));
+				}
 				break;
 			}
 		}

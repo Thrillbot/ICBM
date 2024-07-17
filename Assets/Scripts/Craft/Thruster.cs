@@ -43,6 +43,12 @@ public class Thruster : Part
 
 	private void Update()
 	{
+		if (!isArmed)
+		{
+			fuelCheck = true;
+			return;
+		}
+
 		tanks = transform.root.GetComponentsInChildren<FuelTank>();
 		fuelCheck = false;
 		foreach (FuelTank f in tanks)

@@ -106,8 +106,6 @@ MonoBehaviour:
   explosion: {fileID: 582297097327008511, guid: 2baeafaad882fed409ae4ed27a1fd19e, type: 3}
   rootRigidbody: {fileID: 0}
   attachedCollider: {fileID: 0}
-  position: {x: 0, y: 0, z: 0}
-  rotation: {x: 0, y: 0, z: 0, w: 1}
   launchPad: {fileID: 0}
   torque: 1
 --- !u!114 &-5307774854757168134
