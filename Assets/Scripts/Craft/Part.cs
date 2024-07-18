@@ -1,8 +1,8 @@
 using Mirror;
 using Rewired;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
 
 public class Part : NetworkBehaviour
 {
@@ -12,26 +12,30 @@ public class Part : NetworkBehaviour
 	public float drag;
 	public Vector2 dimensions;
 
+	[Header("Projection")]
+	public LineRenderer lineRenderer;
+	public LineRenderer mapLineRenderer;
+	public int numPoints = 50; // Number of points to display in the line renderer
+	public float timeStep = 0.1f; // Time step for each point in the simulation
+	public LayerMask collisionMask; // Layer mask to check for collisions
+
+	[Header("Other")]
 	public GameObject explosion;
+	public float explosionRadius;
+	public float explosionDamage;
+
 	public Player player;
 	public Rigidbody rootRigidbody;
-
 	public Collider attachedCollider;
 
 	private bool armed;
 	protected float _mass;
 	protected float airPressure;
+	protected float predictedAirPressure;
+	protected float altitude;
+	protected float predictedAltitude;
 
 	private int playerId = 0;
-	private Transform networkTransform;
-
-	/*
-	[SyncVar(hook = "SyncPosition")]
-	public Vector3 position = Vector3.zero;
-
-	[SyncVar(hook = "SyncRotation")]
-	public Quaternion rotation = Quaternion.identity;
-	*/
 
 	private bool hasAuthority = false;
 
@@ -50,15 +54,17 @@ public class Part : NetworkBehaviour
 	{
 		if (!hasAuthority)
 		{
-			//transform.position = position;
-			//transform.rotation = rotation;
 			return;
+		}
+
+		if (transform.position.sqrMagnitude < Universe.killAltitude)
+		{
+			DestroyPart();
 		}
 
 		if (armed && transform.position.sqrMagnitude < Universe.GetPointOnPlanet(transform.position).sqrMagnitude)
 		{
-			Instantiate(explosion, transform.position + transform.position.normalized * 0.25f, Quaternion.identity);
-			Destroy(gameObject);
+			DestroyPart();
 			return;
 		}
 
@@ -73,15 +79,12 @@ public class Part : NetworkBehaviour
 
 		rootRigidbody.AddForce(transform.position.normalized * Universe.Gravity * _mass); // Apply gravity towards planet center.  There's not enough gravity fall off at these distances to include it
 
-		//workerVec = transform.position.normalized; // Local Up
-		//workerVec = Vector3.Cross(workerVec, Vector3.forward); // Local Right
-
 		Vector3 localUp = transform.position.normalized; // Local Up
 		Vector3 localRight = Vector3.Cross(localUp, Vector3.forward); // Local Right
 
 		if (transform.root == transform)
 		{
-			float altitude = transform.position.magnitude - Universe.SeaLevel;
+			altitude = transform.position.magnitude - Universe.SeaLevel;
 			airPressure = (Universe.KarmanLine - altitude) / Universe.KarmanLine; // Adjust based on your Universe class
 			airPressure = Mathf.Clamp(airPressure, 0.0f, 1.0f); // Clamp to [0, 1]
 
@@ -109,15 +112,44 @@ public class Part : NetworkBehaviour
 
 		rootRigidbody.AddForce(-rootRigidbody.velocity * airPressure * drag); // Apply drag
 
-
 		if (!armed && transform.position.sqrMagnitude > Universe.GetPointOnPlanet(transform.position).sqrMagnitude)
 		{
 			armed = true;
 		}
+    }
 
+	private void LateUpdate()
+	{
+		if (armed && lineRenderer)
+		{
+			DrawTrajectory();
+		}
+	}
 
-		//position = transform.position;
-		//rotation = transform.rotation;
+	public void Abort ()
+	{
+		DestroyPart();
+	}
+
+	[Command(requiresAuthority = false)]
+	void DestroyPart()
+	{
+		if (armed)
+		{
+			GameObject explosionGO = Instantiate(explosion, transform.position + transform.position.normalized * 0.25f, Quaternion.identity);
+			explosionGO.transform.parent = Universe.Planet.transform;
+			NetworkServer.Spawn(explosionGO);
+		}
+
+		foreach (BaseSpawner b in FindObjectsOfType<BaseSpawner>())
+		{
+			if ((b.transform.position - transform.position).sqrMagnitude <= explosionRadius * explosionRadius)
+			{
+				b.ApplyDamage(explosionDamage);
+			}
+		}
+
+		NetworkServer.Destroy(gameObject);
 	}
 
 	void ApplyTorqueToAlignWithVelocity()
@@ -152,17 +184,53 @@ public class Part : NetworkBehaviour
 		rootRigidbody.AddTorque(totalTorque * 0.1f);
 	}
 
-
-	/*
-	private void LateUpdate()
+	void DrawTrajectory()
 	{
-		if (networkTransform)
+		List<Vector3> points = new List<Vector3>();
+		Vector3 currentPosition = transform.position;
+		Vector3 currentVelocity = rootRigidbody.velocity;
+		points.Add(currentPosition);
+
+		for (int i = 0; i < numPoints; i++)
 		{
-			networkTransform.transform.position = transform.position;
-			networkTransform.transform.rotation = transform.rotation;
+			// Create a temporary position and velocity for prediction
+			Vector3 tempPosition = currentPosition;
+			Vector3 tempVelocity = currentVelocity;
+
+			foreach (Part p in transform.GetComponentsInChildren<Part>())
+			{
+				tempVelocity += tempPosition.normalized * Universe.Gravity * p._mass * timeStep; // Apply gravity towards the center
+			}
+
+			predictedAltitude = tempPosition.magnitude - Universe.SeaLevel;
+			predictedAirPressure = (Universe.KarmanLine - predictedAltitude) / Universe.KarmanLine; // Adjust based on your Universe class
+			predictedAirPressure = Mathf.Clamp(predictedAirPressure, 0.0f, 1.0f); // Clamp to [0, 1]
+			foreach (Part p in transform.GetComponentsInChildren<Part>())
+			{
+				tempVelocity += -tempVelocity * predictedAirPressure * p.drag * timeStep; // Apply drag
+			}
+
+			// Update position based on new velocity
+			currentPosition += tempVelocity * timeStep;
+			currentVelocity = tempVelocity;
+
+			points.Add(currentPosition);
+
+			// Check for collision
+			RaycastHit hit;
+			if (Physics.Raycast(points[i], points[i + 1] - points[i], out hit, Vector3.Distance(points[i], points[i + 1]), collisionMask))
+			{
+				points.Add(hit.point);
+				break;
+			}
 		}
+
+		lineRenderer.positionCount = points.Count;
+		lineRenderer.SetPositions(points.ToArray());
+
+		mapLineRenderer.positionCount = points.Count;
+		mapLineRenderer.SetPositions(points.ToArray());
 	}
-	*/
 
 	public bool isArmed
 	{
@@ -218,8 +286,7 @@ public class Part : NetworkBehaviour
 
 					GetComponent<Part>().attachedCollider = b.currentHitCollider.GetComponent<Collider>();
 				}
-				//GetComponent<Part>().position = transform.position;
-				//GetComponent<Part>().rotation = transform.rotation;
+
 				try
 				{
 					StartCoroutine(Initialize(b));
@@ -264,27 +331,7 @@ public class Part : NetworkBehaviour
 
 			GetComponent<Part>().attachedCollider = b.currentHitCollider.GetComponent<Collider>();
 		}
-		//GetComponent<Part>().position = transform.position;
-		//GetComponent<Part>().rotation = transform.rotation;
 	}
-
-	/*
-	void SyncPosition(Vector3 oldValue, Vector3 newValue)
-	{
-		if (!isServer)
-			return;
-
-		position = newValue;
-	}
-
-	void SyncRotation(Quaternion oldValue, Quaternion newValue)
-	{
-		if (!isServer)
-			return;
-
-		rotation = newValue;
-	}
-	*/
 
 	private void OnDrawGizmos()
 	{

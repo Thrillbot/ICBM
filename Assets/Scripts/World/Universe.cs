@@ -18,6 +18,8 @@ public sealed class Universe
 
 	public static float dayLengthInMinutes = 60;
 
+    public static float killAltitude = 80;
+
 	private static GameObject planet;
 	private static float gravity = -0.1f;
 	private static float seaLevel = 100f;

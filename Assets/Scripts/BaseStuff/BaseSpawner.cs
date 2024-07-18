@@ -6,6 +6,7 @@ using static Universe;
 
 public class BaseSpawner : NetworkBehaviour
 {
+	public float health = 100;
 
 	public GameObject planet;
 	[SyncVar(hook = "SetPieSlice")]
@@ -73,6 +74,21 @@ public class BaseSpawner : NetworkBehaviour
 
 			SetInitialized(false, true);
 		}
+	}
+
+	public void ApplyDamage (float damage)
+	{
+		health -= damage;
+		if (health <= 0)
+		{
+			BaseDeath();
+		}
+	}
+
+	[Command]
+	void BaseDeath ()
+	{
+		NetworkServer.Destroy(gameObject);
 	}
 
 	void SetPieSlice(Transform oldValue, Transform newValue)

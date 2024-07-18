@@ -59,9 +59,14 @@ public class GameManager : NetworkBehaviour
 		noiseOffset = newValue;
 	}
 
-	public void FocusBase ()
+	public void FocusBase()
 	{
 		GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>().Focus(baseLocation, 5);
+	}
+
+	public void AbortFlight()
+	{
+		GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>().target.GetComponent<Part>().Abort();
 	}
 
 	public float GameTime

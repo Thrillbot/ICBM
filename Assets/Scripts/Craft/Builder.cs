@@ -123,7 +123,7 @@ public class Builder : NetworkBehaviour
 
 						if (craftHead == null)
 						{
-							CmdSpawnPart(-1, connectionToClient);
+							CmdSpawnPart(-1, netIdentity);
 							/*
 							craftHead = Instantiate(craftHeadPrefab);
 							NetworkServer.Spawn(craftHead, connectionToClient);
@@ -180,7 +180,7 @@ public class Builder : NetworkBehaviour
 
 							newPart.GetComponent<Part>().attachedCollider = h.collider;
 							*/
-							CmdSpawnPart(partIndex, connectionToClient);//, ghostPart.transform.localPosition, ghostPart.transform.localRotation, h.collider.GetComponent<NetworkIdentity>());
+							CmdSpawnPart(partIndex, netIdentity);//, ghostPart.transform.localPosition, ghostPart.transform.localRotation, h.collider.GetComponent<NetworkIdentity>());
 							h.collider.enabled = false;
 						}
 					}
@@ -258,8 +258,6 @@ public class Builder : NetworkBehaviour
 
 				newPart.GetComponent<Part>().attachedCollider = currentHitCollider.GetComponent<Collider>();
 			}
-			//newPart.GetComponent<Part>().position = newPart.transform.position;
-			//newPart.GetComponent<Part>().rotation = newPart.transform.rotation;
 		}
 		catch (Exception e)
 		{
@@ -268,15 +266,17 @@ public class Builder : NetworkBehaviour
 	}
 
 	[Command(requiresAuthority = false)]
-	void CmdSpawnPart (int index, NetworkConnectionToClient conn)//, Vector3 pos, Quaternion rot, NetworkIdentity col)
+	void CmdSpawnPart (int index, NetworkIdentity identity)//, Vector3 pos, Quaternion rot, NetworkIdentity col)
 	{
 		GameObject newPart;
 		if (index == -1)
 			newPart = Instantiate(craftHeadPrefab);
 		else
 			newPart = Instantiate(parts[index]);
-		NetworkServer.Spawn(newPart, conn);
-		newPart.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
+
+		NetworkServer.Spawn(newPart, identity.connectionToClient);
+
+		newPart.GetComponent<NetworkIdentity>().AssignClientAuthority(identity.connectionToClient);
 	}
 
 	[Command(requiresAuthority = false)]

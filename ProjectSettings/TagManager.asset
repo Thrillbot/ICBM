@@ -11,15 +11,16 @@ TagManager:
   - PlayerList
   - BeingBuilt
   - FreeCam
+  - BeingBuild
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Planet
   - Water
   - UI
   - Parts
-  - 
+  - MinimapOnly
   - 
   - 
   - 

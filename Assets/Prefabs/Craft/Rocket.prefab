@@ -5050,11 +5050,18 @@ MonoBehaviour:
   mass: 2
   drag: 0.1
   dimensions: {x: 0.25, y: 0.25}
+  lineRenderer: {fileID: 0}
+  mapLineRenderer: {fileID: 0}
+  numPoints: 50
+  timeStep: 0.1
+  collisionMask:
+    serializedVersion: 2
+    m_Bits: 0
   explosion: {fileID: 582297097327008511, guid: 3a9723338d9e4ba4a859edb4b0366c85, type: 3}
+  explosionRadius: 3
+  explosionDamage: 10
   rootRigidbody: {fileID: 0}
   attachedCollider: {fileID: 0}
-  position: {x: 0, y: 0, z: 0}
-  rotation: {x: 0, y: 0, z: 0, w: 1}
   thrust: 2
   fuelRate: 1
   smoke: {fileID: 1781085656178198152}
