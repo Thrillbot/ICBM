@@ -1,6 +1,7 @@
 using Mirror;
 using Rewired;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -19,6 +20,7 @@ public class Builder : NetworkBehaviour
 	public Material ghostMaterial;
 	public GameObject craftHeadPrefab;
 	public GameObject[] parts;
+	public GameObject[] explosions;
 
 	public Collider currentHitCollider;
 
@@ -262,6 +264,31 @@ public class Builder : NetworkBehaviour
 		catch (Exception e)
 		{
 			Debug.LogError(e);
+		}
+	}
+
+	[Command(requiresAuthority = false)]
+	public void DestroyPart(GameObject part, bool armed, Vector3 pos, float explosionRadius, float explosionDamage, int explosionIndex)
+	{
+		if (part != null)
+		{
+			if (armed)
+			{
+				GameObject explosionGO = Instantiate(explosions[explosionIndex], pos, Quaternion.identity);
+				NetworkServer.Spawn(explosionGO);
+			}
+
+			/*
+			foreach (BaseSpawner b in FindObjectsOfType<BaseSpawner>())
+			{
+				if ((b.transform.position - transform.position).sqrMagnitude <= explosionRadius * explosionRadius)
+				{
+					b.RpcApplyDamage(explosionDamage);
+				}
+			}
+			*/
+
+			NetworkServer.Destroy(part.gameObject);
 		}
 	}
 

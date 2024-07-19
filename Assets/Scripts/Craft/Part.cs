@@ -1,6 +1,5 @@
 using Mirror;
 using Rewired;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -23,6 +22,7 @@ public class Part : NetworkBehaviour
 	public GameObject explosion;
 	public float explosionRadius;
 	public float explosionDamage;
+	public Builder builder;
 
 	public Player player;
 	public Rigidbody rootRigidbody;
@@ -59,12 +59,15 @@ public class Part : NetworkBehaviour
 
 		if (transform.position.sqrMagnitude < Universe.killAltitude)
 		{
-			DestroyPart();
+			//CmdDestroyPart(transform.position + transform.position.normalized * 0.25f);
+			DestroySelf();
+			return;
 		}
 
 		if (armed && transform.position.sqrMagnitude < Universe.GetPointOnPlanet(transform.position).sqrMagnitude)
 		{
-			DestroyPart();
+			//CmdDestroyPart(transform.position + transform.position.normalized * 0.25f);
+			DestroySelf();
 			return;
 		}
 
@@ -128,28 +131,12 @@ public class Part : NetworkBehaviour
 
 	public void Abort ()
 	{
-		DestroyPart();
+		DestroySelf();
 	}
 
-	[Command(requiresAuthority = false)]
-	void DestroyPart()
+	void DestroySelf ()
 	{
-		if (armed)
-		{
-			GameObject explosionGO = Instantiate(explosion, transform.position + transform.position.normalized * 0.25f, Quaternion.identity);
-			explosionGO.transform.parent = Universe.Planet.transform;
-			NetworkServer.Spawn(explosionGO);
-		}
-
-		foreach (BaseSpawner b in FindObjectsOfType<BaseSpawner>())
-		{
-			if ((b.transform.position - transform.position).sqrMagnitude <= explosionRadius * explosionRadius)
-			{
-				b.ApplyDamage(explosionDamage);
-			}
-		}
-
-		NetworkServer.Destroy(gameObject);
+		builder.DestroyPart(gameObject, armed, transform.position, explosionRadius, explosionDamage, GetComponent<ControlModule>() ? 1 : 0);
 	}
 
 	void ApplyTorqueToAlignWithVelocity()
@@ -258,6 +245,7 @@ public class Part : NetworkBehaviour
 		{
 			if (b.GetComponent<NetworkIdentity>().isLocalPlayer)
 			{
+				builder = b;
 				//b.InitializePart(gameObject);
 				if (GetComponent<ControlModule>())
 				{
@@ -286,50 +274,8 @@ public class Part : NetworkBehaviour
 
 					GetComponent<Part>().attachedCollider = b.currentHitCollider.GetComponent<Collider>();
 				}
-
-				try
-				{
-					StartCoroutine(Initialize(b));
-				}
-				catch
-				{
-
-				}
 				break;
 			}
-		}
-	}
-
-	IEnumerator Initialize (Builder b)
-	{
-		yield return null;
-
-		if (GetComponent<ControlModule>())
-		{
-			transform.parent = b.transform;
-			transform.localEulerAngles = Vector3.zero;
-			transform.localScale = Vector3.one * 10f;
-			transform.localPosition = new Vector3(0, 0, -1.5f);
-			GetComponent<ControlModule>().launchPad = b.launchPad;
-			b.craftHead = gameObject;
-		}
-		else
-		{
-			transform.parent = b.currentHitCollider.transform.parent;
-			transform.SetAsFirstSibling();
-			transform.localPosition = b.ghostPart.transform.localPosition;
-			transform.localRotation = b.ghostPart.transform.localRotation;
-
-			foreach (SphereCollider s in transform.GetComponentsInChildren<SphereCollider>())
-			{
-				if (Vector3.Dot(s.transform.localPosition.normalized, b.currentHitCollider.transform.parent.position - s.transform.position) > 0.8f)
-				{
-					s.enabled = false;
-					break;
-				}
-			}
-
-			GetComponent<Part>().attachedCollider = b.currentHitCollider.GetComponent<Collider>();
 		}
 	}
 

@@ -6,7 +6,8 @@ public class Explosion : MonoBehaviour
 	public float maxIntensity = 5;
 	public Light explosionLight;
 	public AnimationCurve lightLevel;
-
+	public float explosionRadius;
+	public float explosionDamage;
 	public AudioSource explosionSound;
 	public AudioClip[] clips;
 

@@ -4947,6 +4947,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  explosionRadius: 3
+  explosionDamage: 10
   explosionSound: {fileID: 3387753483183915043}
   clips:
   - {fileID: 8300000, guid: d6a5cc7414a9eb44b8044733dcdbf79a, type: 3}

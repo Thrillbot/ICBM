@@ -1,5 +1,6 @@
 using Mirror;
 using Rewired;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using static Universe;
@@ -24,6 +25,7 @@ public class BaseSpawner : NetworkBehaviour
 	private bool placed;
 
 	private TMP_Text debugText;
+	private List<Explosion> explosions;
 
 	void Awake()
 	{
@@ -78,9 +80,11 @@ public class BaseSpawner : NetworkBehaviour
 
 	public void ApplyDamage (float damage)
 	{
+		Debug.Log("Damaging by " + damage + " of total " + health);
 		health -= damage;
 		if (health <= 0)
 		{
+			Debug.Log("Killing Base");
 			BaseDeath();
 		}
 	}
@@ -119,6 +123,22 @@ public class BaseSpawner : NetworkBehaviour
 
 		if (!isLocalPlayer || !initialized)
 			return;
+
+		if (placed)
+		{
+			explosions ??= new();
+			foreach (Explosion e in FindObjectsOfType<Explosion>())
+			{
+				if (explosions.Contains(e)) continue;
+				explosions.Add(e);
+
+				if ((e.transform.position - transform.position).sqrMagnitude <= e.explosionRadius * e.explosionRadius)
+				{
+					Debug.Log("Applying Damage");
+					ApplyDamage(e.explosionDamage);
+				}
+			}
+		}
 
 		if (isLocalPlayer && !placed)
 		{

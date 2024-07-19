@@ -8,6 +8,7 @@ using System.Collections;
 
 public class SteamLobby : MonoBehaviour
 {
+	public string multiplayerSceneName = "Lobby";
 	public NetworkManager networkManager;
 	public GameObject lobbyUI;
 	public GameObject preGameUI;
@@ -15,17 +16,26 @@ public class SteamLobby : MonoBehaviour
 	public TMP_Text playerListText;
 	public GameObject networkCanvas;
 	public string lobbyScene;
+	public ulong currentLobbyID;
 
 	protected Callback<LobbyCreated_t> lobbyCreated;
 	protected Callback<GameLobbyJoinRequested_t> gameLobbyJoinRequested;
 	protected Callback<LobbyEnter_t> gameLobbyEntered;
 
 	private const string HostAddressKey = "HostAddress";
-
+	private static SteamLobby _instance;
 	private List<string> playerList;
+
+	public static SteamLobby Instance
+	{
+		get { return _instance; }
+	}
 
 	private void Start()
 	{
+		if (_instance == null)
+			_instance = this;
+
 		SceneManager.sceneLoaded += OnSceneLoaded;
 		StartCoroutine(WhileNotInitialized());
 	}
@@ -53,6 +63,7 @@ public class SteamLobby : MonoBehaviour
 
 		networkManager.StartHost();
 		SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), HostAddressKey, SteamUser.GetSteamID().ToString());
+		currentLobbyID = callback.m_ulSteamIDLobby;
 	}
 
 	private void OnGameLobbyJoinRequested(GameLobbyJoinRequested_t callback)
@@ -67,6 +78,7 @@ public class SteamLobby : MonoBehaviour
 		networkManager.networkAddress = hostAddress;
 		networkManager.StartClient();
 
+		SceneManager.LoadScene(multiplayerSceneName);
 		lobbyUI.SetActive(false);
 		preGameUI.SetActive(true);
 	}
