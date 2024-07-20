@@ -1,7 +1,6 @@
 using Mirror;
 using Rewired;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -10,12 +9,15 @@ using UnityEngine.UI;
 public class Builder : NetworkBehaviour
 {
 	public TMP_Text feedbackText;
-	public GameObject launchButton;
 	public bool active;
 	public BoxCollider buildVolume;
 	public Transform launchPad;
 	public LayerMask uiLayers;
 	public GameObject tubeMask;
+	public GameObject launchButton;
+	public GameObject abortButton;
+	public Image throttleVisual;
+	public GameObject throttlePanel;
 
 	public Material ghostMaterial;
 	public GameObject craftHeadPrefab;
@@ -38,20 +40,16 @@ public class Builder : NetworkBehaviour
 	private int playerId = 0;
 	private Player player;
 
+	private float throttle;
+	private float throttleRampTime = 0.5f;
+
 	void Awake()
 	{
 		if (!isLocalPlayer)
 			return;
 
 		cam = GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>();
-		launchButton = GameObject.FindWithTag("LaunchButton");
-		if (launchButton != null)
-		{
-			launchButton.GetComponent<Image>().color = Color.red;
-			launchButton.GetComponentInChildren<TMP_Text>().color = Color.white;
-			launchButton.GetComponent<Button>().onClick.AddListener(() => Launch());
-			launchButton.SetActive(false);
-		}
+
 		SpawnGhostPart();
 
 		// Get the Rewired Player object for this player and keep it for the duration of the character's lifetime
@@ -82,25 +80,15 @@ public class Builder : NetworkBehaviour
 			cam = GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>();
 		}
 
-		if (launchButton == null)
-		{
-			launchButton = GameObject.FindWithTag("LaunchButton");
-			if (launchButton != null)
-			{
-				launchButton.GetComponent<Image>().color = Color.red;
-				launchButton.GetComponentInChildren<TMP_Text>().color = Color.white;
-				launchButton.GetComponent<Button>().onClick.AddListener(() => Launch());
-				launchButton.SetActive(false);
-			}
-			if (!ghostPart)
-				SpawnGhostPart();
-		}
+		if (!ghostPart)
+			SpawnGhostPart();
 
-		if (!debugMode)
-		{
-			if (launchButton == null || launchButton.GetComponent<MouseOverUI>().MousedOver)
-				return;
-		}
+		if (launchButton.activeInHierarchy && launchButton.GetComponent<MouseOverUI>().MousedOver)
+			return;
+
+		throttle += player.GetAxis("Vertical") * (Time.deltaTime / throttleRampTime);
+		throttle = Mathf.Clamp01(throttle);
+		throttleVisual.fillAmount = throttle;
 
 		ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 		hits = Physics.RaycastAll(ray.origin, ray.direction, 1000);
@@ -112,16 +100,18 @@ public class Builder : NetworkBehaviour
 		{
 			foreach (RaycastHit h in hits)
 			{
+				Debug.Log(h.collider.gameObject.tag);
 				if (h.collider.gameObject.tag == "BuildVolume" || h.collider.gameObject.tag == "BeingBuilt")
 				{
 					if (!active && player.GetButtonUp("Interact"))
 					{
+						launchButton.SetActive(true);
 						active = true;
 						tubeMask.SetActive(true);
 						cam.target = tubeMask.transform;
 						cam.BuildMode = true;
-						if (launchButton != null)
-							launchButton.SetActive(true);
+						abortButton.SetActive(false);
+						throttlePanel.SetActive(false);
 
 						if (craftHead == null)
 						{
@@ -207,8 +197,9 @@ public class Builder : NetworkBehaviour
 				tubeMask.SetActive(false);
 				cam.target = null;
 				cam.BuildMode = false;
-				if (launchButton != null)
-					launchButton.SetActive(false);
+				launchButton.SetActive(false);
+				abortButton.SetActive(false);
+				throttlePanel.SetActive(false);
 				return;
 			}
 		}
@@ -349,6 +340,8 @@ public class Builder : NetworkBehaviour
 
 	public void Launch ()
 	{
+		throttle = 1;
+
 		feedbackText.text = "";
 		string feedback = "";
 		bool hasFuel = craftHead.transform.GetComponentsInChildren<FuelTank>().Length != 0;
@@ -381,8 +374,9 @@ public class Builder : NetworkBehaviour
 		feedbackText.transform.parent.gameObject.SetActive(false);
 		tubeMask.SetActive(false);
 		cam.BuildMode = false;
-		if (launchButton != null)
-			launchButton.SetActive(false);
+		launchButton.SetActive(false);
+		abortButton.SetActive(true);
+		throttlePanel.SetActive(true);
 	}
 
 	public void DeleteCraft ()
@@ -395,5 +389,10 @@ public class Builder : NetworkBehaviour
 			}
 		}
 		craft.Clear();
+	}
+
+	public float Throttle
+	{
+		get { return throttle; }
 	}
 }

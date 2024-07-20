@@ -24,11 +24,11 @@ public class Part : NetworkBehaviour
 	public float explosionDamage;
 	public Builder builder;
 
-	public Player player;
 	public Rigidbody rootRigidbody;
 	public Collider attachedCollider;
 
 	private bool armed;
+	protected Player player;
 	protected float _mass;
 	protected float airPressure;
 	protected float predictedAirPressure;
@@ -109,7 +109,7 @@ public class Part : NetworkBehaviour
 			rootRigidbody.AddForce(localRight * forceMagnitude);
 
 			// Lift (Up/Down) based on alignment of forward vector and velocity times by air pressure
-			rootRigidbody.AddForce(Vector3.Cross(transform.right, rootRigidbody.velocity) * (Vector3.Dot(transform.forward, rootRigidbody.velocity)) * airPressure * airPressure * 0.025f);
+			rootRigidbody.AddForce(Vector3.Cross(transform.right, rootRigidbody.velocity) * Vector3.Dot(transform.forward, rootRigidbody.velocity) * airPressure * airPressure * 0.025f);
 			ApplyTorqueToAlignWithVelocity();
 		}
 

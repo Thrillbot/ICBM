@@ -40,6 +40,16 @@ public class SteamLobby : MonoBehaviour
 		StartCoroutine(WhileNotInitialized());
 	}
 
+	void Update ()
+	{
+		playerListText.text = "";
+		foreach (LobbyPlayer p in FindObjectsOfType<LobbyPlayer>())
+		{
+			Debug.Log("Adding Player Name: " + p.playerName);
+			playerListText.text += p.playerName + '\n';
+		}
+	}
+
 	IEnumerator WhileNotInitialized ()
 	{
 		while (!SteamManager.Initialized)
@@ -61,9 +71,11 @@ public class SteamLobby : MonoBehaviour
 			return;
 		}
 
+		CSteamID lobbyId = new CSteamID(callback.m_ulSteamIDLobby);
+		currentLobbyID = lobbyId.m_SteamID;
+
 		networkManager.StartHost();
-		SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), HostAddressKey, SteamUser.GetSteamID().ToString());
-		currentLobbyID = callback.m_ulSteamIDLobby;
+		SteamMatchmaking.SetLobbyData(lobbyId, HostAddressKey, SteamUser.GetSteamID().ToString());
 	}
 
 	private void OnGameLobbyJoinRequested(GameLobbyJoinRequested_t callback)
@@ -117,6 +129,24 @@ public class SteamLobby : MonoBehaviour
 		{
 			lobbyUI.SetActive(false);
 			preGameUI.SetActive(false);
+		}
+	}
+
+	public void AddNameToList (string name)
+	{
+		Debug.Log("Adding Player To List");
+		playerList ??= new();
+
+		if (playerList.Contains(name)) return;
+		Debug.Log("Confirmed, Unique Player");
+		playerList.Add(name);
+
+		Debug.Log("Updating Player List Text");
+		playerListText.text = "";
+		foreach (string s in playerList)
+		{
+			Debug.Log("Adding Player Name: " + s);
+			playerListText.text += s + '\n';
 		}
 	}
 }

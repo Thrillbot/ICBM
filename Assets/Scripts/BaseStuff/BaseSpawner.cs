@@ -3,16 +3,23 @@ using Rewired;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using static Universe;
 
 public class BaseSpawner : NetworkBehaviour
 {
+	[SyncVar(hook = "SetHealth")]
 	public float health = 100;
+	public Image healthbar;
 
 	public GameObject planet;
 	[SyncVar(hook = "SetPieSlice")]
 	public Transform pieSlice;
 	public int playerId = 0;
+
+	[SyncVar(hook = "SetName")]
+	public string playerName;
+	public TMP_Text nameTag;
 
 	private Vector3 workerVec;
 	private Player player;
@@ -31,8 +38,6 @@ public class BaseSpawner : NetworkBehaviour
 	{
 		// Get the Rewired Player object for this player and keep it for the duration of the character's lifetime
 		player = ReInput.players.GetPlayer(playerId);
-
-		GameManager.baseLocation = transform;
 	}
 
 	public bool Visible
@@ -82,6 +87,7 @@ public class BaseSpawner : NetworkBehaviour
 	{
 		Debug.Log("Damaging by " + damage + " of total " + health);
 		health -= damage;
+		SetHealth(100, health);
 		if (health <= 0)
 		{
 			Debug.Log("Killing Base");
@@ -114,6 +120,30 @@ public class BaseSpawner : NetworkBehaviour
 	void SetInitialized(bool oldValue, bool newValue)
 	{
 		initialized = newValue;
+	}
+
+	public void SetName(string oldValue, string newValue)
+	{
+		playerName = newValue;
+		Debug.Log("Setting Player Name Tag: " + playerName);
+		nameTag.text = playerName;
+	}
+
+	public void FocusBase ()
+	{
+		GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>().Focus(transform, 5);
+	}
+
+	public void AbortFlight ()
+	{
+		if (GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>().target.GetComponent<Part>())
+			GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>().target.GetComponent<Part>().Abort();
+	}
+
+	void SetHealth (float oldvalue, float newValue)
+	{
+		health = newValue;
+		healthbar.fillAmount = health / 100f;
 	}
 
 	private void Update()

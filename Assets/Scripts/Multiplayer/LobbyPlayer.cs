@@ -6,13 +6,17 @@ public class LobbyPlayer : NetworkBehaviour
 	[SyncVar(hook = "SetName")]
 	public string playerName;
 
-	public override void OnStartAuthority() {
-		SetName("", SteamFriends.GetPersonaName());
-	}
+	[SyncVar(hook = "SetSteamID")]
+	public CSteamID steamID;
 
-	void SetName(string oldValue, string newValue)
+	public void SetName(string oldValue, string newValue)
 	{
 		playerName = newValue;
-		FindObjectOfType<LobbyManager>().AddSelfToLobby(this);
+		gameObject.name = playerName;
+	}
+
+	public void SetSteamID(CSteamID oldValue, CSteamID newValue)
+	{
+		steamID = newValue;
 	}
 }

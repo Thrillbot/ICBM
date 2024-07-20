@@ -1,4 +1,5 @@
 using Mirror;
+using System.Collections;
 using UnityEngine;
 
 public class GameManager : NetworkBehaviour
@@ -11,16 +12,25 @@ public class GameManager : NetworkBehaviour
 	[SyncVar(hook = "SetNoiseOffset")]
 	private Vector3 noiseOffset;
 
-	public static Transform baseLocation;
-
 	private void Start()
 	{
-		if (perlinNoiseSeed == 0)
-			perlinNoiseSeed = Random.Range(int.MinValue, int.MaxValue);
-		SetSeed(0, perlinNoiseSeed);
-		Random.InitState(perlinNoiseSeed);
-		noiseOffset = new Vector3(Random.Range(999, 99999), Random.Range(999, 99999), Random.Range(999, 99999));
-		SetNoiseOffset(Vector2.zero, noiseOffset);
+		if (isServer)
+		{
+			if (perlinNoiseSeed == 0)
+				perlinNoiseSeed = Random.Range(int.MinValue, int.MaxValue);
+			SetSeed(0, perlinNoiseSeed);
+			Random.InitState(perlinNoiseSeed);
+			noiseOffset = new Vector3(Random.Range(999, 99999), Random.Range(999, 99999), Random.Range(999, 99999));
+			SetNoiseOffset(Vector2.zero, noiseOffset);
+		}
+		//StartCoroutine(Initialize());
+	}
+
+	IEnumerator Initialize ()
+	{
+		yield return null;
+
+		FindObjectOfType<Worldificate>().generate = true;
 	}
 
 	void Update()
@@ -33,9 +43,6 @@ public class GameManager : NetworkBehaviour
 
 	void SetGameTime(float oldValue, float newValue)
 	{
-		if (!isServer)
-			return;
-
 		gameTime = newValue;
 		if (gameTime >= 1f)
 		{
@@ -45,28 +52,14 @@ public class GameManager : NetworkBehaviour
 
 	void SetSeed(int oldValue, int newValue)
 	{
-		if (!isServer)
-			return;
-
 		perlinNoiseSeed = newValue;
 	}
 
 	void SetNoiseOffset(Vector3 oldValue, Vector3 newValue)
 	{
-		if (!isServer)
-			return;
-
 		noiseOffset = newValue;
-	}
 
-	public void FocusBase()
-	{
-		GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>().Focus(baseLocation, 5);
-	}
-
-	public void AbortFlight()
-	{
-		GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>().target.GetComponent<Part>().Abort();
+		FindObjectOfType<Worldificate>().generate = true;
 	}
 
 	public float GameTime
