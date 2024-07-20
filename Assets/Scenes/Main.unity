@@ -560,6 +560,7 @@ MonoBehaviour:
   networkManager: {fileID: 363753206}
   lobbyUI: {fileID: 707338313}
   preGameUI: {fileID: 807982034}
+  launchGameButton: {fileID: 483527261}
   worldSceneName: MultiplayerWorld
   playerListText: {fileID: 1860701702}
   networkCanvas: {fileID: 1667933434}
@@ -688,7 +689,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &483527262
 RectTransform:
   m_ObjectHideFlags: 0

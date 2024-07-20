@@ -18,6 +18,7 @@ public class Builder : NetworkBehaviour
 	public GameObject abortButton;
 	public Image throttleVisual;
 	public GameObject throttlePanel;
+	public GameObject controlButtons;
 
 	public Material ghostMaterial;
 	public GameObject craftHeadPrefab;
@@ -40,14 +41,11 @@ public class Builder : NetworkBehaviour
 	private int playerId = 0;
 	private Player player;
 
-	private float throttle;
+	public float throttle;
 	private float throttleRampTime = 0.5f;
 
 	void Awake()
 	{
-		if (!isLocalPlayer)
-			return;
-
 		cam = GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>();
 
 		SpawnGhostPart();
@@ -58,7 +56,7 @@ public class Builder : NetworkBehaviour
 
 	void LateUpdate()
 	{
-		if (!isLocalPlayer)
+		if (!isOwned)
 		{
 			Debug.Log("Not Local Player");
 			return;
@@ -75,7 +73,7 @@ public class Builder : NetworkBehaviour
 			return;
 		}
 
-        if (cam == null)
+		if (cam == null)
 		{
 			cam = GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>();
 		}
@@ -83,12 +81,24 @@ public class Builder : NetworkBehaviour
 		if (!ghostPart)
 			SpawnGhostPart();
 
+		if (craftHead == null)
+		{
+			abortButton.SetActive(false);
+			throttlePanel.SetActive(false);
+		}
+
 		if (launchButton.activeInHierarchy && launchButton.GetComponent<MouseOverUI>().MousedOver)
 			return;
-
-		throttle += player.GetAxis("Vertical") * (Time.deltaTime / throttleRampTime);
-		throttle = Mathf.Clamp01(throttle);
-		throttleVisual.fillAmount = throttle;
+		
+		if (craftHead == null || !craftHead.GetComponent<Rigidbody>().isKinematic) {
+			throttle += player.GetAxis("Vertical") * (Time.deltaTime / throttleRampTime);
+			throttle = Mathf.Clamp01(throttle);
+			throttleVisual.fillAmount = throttle;
+		}
+		else
+		{
+			throttle = 0;
+		}
 
 		ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 		hits = Physics.RaycastAll(ray.origin, ray.direction, 1000);
@@ -100,7 +110,6 @@ public class Builder : NetworkBehaviour
 		{
 			foreach (RaycastHit h in hits)
 			{
-				Debug.Log(h.collider.gameObject.tag);
 				if (h.collider.gameObject.tag == "BuildVolume" || h.collider.gameObject.tag == "BeingBuilt")
 				{
 					if (!active && player.GetButtonUp("Interact"))
@@ -394,5 +403,11 @@ public class Builder : NetworkBehaviour
 	public float Throttle
 	{
 		get { return throttle; }
+	}
+
+	public override void OnStartAuthority()
+	{
+		base.OnStartAuthority();
+		controlButtons.SetActive(true);
 	}
 }

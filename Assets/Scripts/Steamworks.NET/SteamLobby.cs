@@ -12,6 +12,7 @@ public class SteamLobby : MonoBehaviour
 	public NetworkManager networkManager;
 	public GameObject lobbyUI;
 	public GameObject preGameUI;
+	public GameObject launchGameButton;
 	public string worldSceneName;
 	public TMP_Text playerListText;
 	public GameObject networkCanvas;
@@ -102,6 +103,7 @@ public class SteamLobby : MonoBehaviour
 
 		lobbyUI.SetActive(false);
 		preGameUI.SetActive(true);
+		launchGameButton.SetActive(true);
 		SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, networkManager.maxConnections);
 	}
 

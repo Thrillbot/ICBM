@@ -1,4 +1,5 @@
 using UnityEngine;
+using Mirror;
 
 public class Thruster : Part
 {
@@ -9,24 +10,19 @@ public class Thruster : Part
 	public AudioSource thrusterAudio;
 	public AnimationCurve specificImpulse;
 
-	bool fuelCheck;
+	[SyncVar]
+	public bool fuelCheck;
 	FuelTank[] tanks;
-	float throttle;
+
+	[SyncVar(hook = "SetThrottle")]
+	public float throttle;
 
 	public override void FixedUpdate()
 	{
 		base.FixedUpdate();
-		if (!transform.root.GetComponent<Rigidbody>() || transform.root.GetComponent<Rigidbody>().isKinematic) return;
-
-		throttle = builder.Throttle;
 
 		if (fuelCheck)
 		{
-			airPressure = (Universe.KarmanLine - (transform.position.magnitude - Universe.GetPointOnPlanet(transform.position).magnitude)) / Universe.KarmanLine; // From seaLevel to 50f above seaLevel (Defining line of "space" for this game)
-			airPressure = Mathf.Clamp(airPressure, 0.0f, 1.0f); // Clamp that so we can do a force
-
-			transform.root.GetComponent<Rigidbody>().AddForceAtPosition(transform.forward * thrust * specificImpulse.Evaluate(airPressure) * throttle, transform.position);
-
 			ParticleSystem.MainModule temp = smoke.main;
 			temp.startSizeMultiplier = throttle * 5f;
 
@@ -34,6 +30,7 @@ public class Thruster : Part
 			{
 				thrusterAudio.Play();
 				thrusterAudio.time = Random.value * thrusterAudio.clip.length;
+				thrusterAudio.volume = throttle;
 				smoke.Play();
 			}
 		}
@@ -45,10 +42,31 @@ public class Thruster : Part
 				smoke.Stop();
 			}
 		}
+
+		if (!hasAuthority) return;
+
+		if (!transform.root.GetComponent<Rigidbody>() || transform.root.GetComponent<Rigidbody>().isKinematic) return;
+		
+		throttle = builder.Throttle;
+		CommandSetThrottle(throttle, fuelCheck);
+
+		if (fuelCheck)
+		{
+			airPressure = (Universe.KarmanLine - (transform.position.magnitude - Universe.GetPointOnPlanet(transform.position).magnitude)) / Universe.KarmanLine; // From seaLevel to 50f above seaLevel (Defining line of "space" for this game)
+			airPressure = Mathf.Clamp(airPressure, 0.0f, 1.0f); // Clamp that so we can do a force
+
+			transform.root.GetComponent<Rigidbody>().AddForceAtPosition(transform.forward * thrust * specificImpulse.Evaluate(airPressure) * throttle, transform.position);
+		}
+		else
+		{
+
+		}
 	}
 
 	private void Update()
 	{
+		if (!hasAuthority) return;
+
 		if (!isArmed)
 		{
 			fuelCheck = true;
@@ -64,6 +82,40 @@ public class Thruster : Part
 
 			if (f.fuel > 0)
 				fuelCheck = true;
+		}
+	}
+
+	[Command(requiresAuthority = false)]
+	public void CommandSetThrottle (float throttleSet, bool fuelCheckSet)
+	{
+		throttle = throttleSet;
+		fuelCheck = fuelCheckSet;
+		SetThrottle(-1, throttleSet);
+	}
+
+	[ClientRpc]
+	public void SetThrottle (float oldValue, float newValue)
+	{
+		if (fuelCheck)
+		{
+			ParticleSystem.MainModule temp = smoke.main;
+			temp.startSizeMultiplier = throttle * 5f;
+
+			if (!smoke.isPlaying)
+			{
+				thrusterAudio.Play();
+				thrusterAudio.time = Random.value * thrusterAudio.clip.length;
+				thrusterAudio.volume = throttle;
+				smoke.Play();
+			}
+		}
+		else
+		{
+			if (smoke.isPlaying)
+			{
+				thrusterAudio.Stop();
+				smoke.Stop();
+			}
 		}
 	}
 }

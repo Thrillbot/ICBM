@@ -27,6 +27,7 @@ public class Part : NetworkBehaviour
 	public Rigidbody rootRigidbody;
 	public Collider attachedCollider;
 
+	[SyncVar(hook = "SetArmed")]
 	private bool armed;
 	protected Player player;
 	protected float _mass;
@@ -37,7 +38,7 @@ public class Part : NetworkBehaviour
 
 	private int playerId = 0;
 
-	private bool hasAuthority = false;
+	protected bool hasAuthority = false;
 
 	private void Awake()
 	{
@@ -118,6 +119,7 @@ public class Part : NetworkBehaviour
 		if (!armed && transform.position.sqrMagnitude > Universe.GetPointOnPlanet(transform.position).sqrMagnitude)
 		{
 			armed = true;
+			SetArmed(false, true);
 		}
     }
 
@@ -224,6 +226,11 @@ public class Part : NetworkBehaviour
 		get { return armed; }
 	}
 
+	void SetArmed (bool oldValue, bool newValue)
+	{
+		armed = newValue;
+	}
+
 	Vector3 FindPartOffset(Vector3 direction, Part part)
 	{
 		Vector3 offset;
@@ -240,6 +247,8 @@ public class Part : NetworkBehaviour
 
 	public override void OnStartAuthority ()
 	{
+		base.OnStartAuthority();
+
 		hasAuthority = true;
 		foreach (Builder b in FindObjectsByType<Builder>(FindObjectsSortMode.None))
 		{

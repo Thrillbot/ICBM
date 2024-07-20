@@ -3,8 +3,6 @@ using UnityEngine;
 using Mirror;
 using Steamworks;
 using System.Collections.Generic;
-using static BasicNetManager;
-using System.Collections;
 
 public class BasicNetManager : NetworkManager
 {

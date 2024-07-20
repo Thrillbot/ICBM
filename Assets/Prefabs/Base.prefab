@@ -1029,9 +1029,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2978973621751969622}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: 
+      - m_Target: {fileID: 1764824634607939944}
+        m_TargetAssemblyTypeName: BaseSpawner, Assembly-CSharp
+        m_MethodName: AbortFlight
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1286,6 +1286,7 @@ MonoBehaviour:
   abortButton: {fileID: 2683258702106114734}
   throttleVisual: {fileID: 8201617653943592883}
   throttlePanel: {fileID: 2202833433854540082}
+  controlButtons: {fileID: 8683575289231307353}
   ghostMaterial: {fileID: 2100000, guid: 71a3e8d089cd71943a5e5d802171227c, type: 2}
   craftHeadPrefab: {fileID: 8436534409951991007, guid: b659d4d30a1941c448561c677cfa731f, type: 3}
   parts:
@@ -2349,7 +2350,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &3495620987590136906
 RectTransform:
   m_ObjectHideFlags: 0
