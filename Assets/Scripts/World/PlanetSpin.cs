@@ -7,6 +7,9 @@ public class PlanetSpin : MonoBehaviour
 
 	void LateUpdate()
 	{
-		transform.localEulerAngles = gameManager.GameTime * 360f * axis.normalized;
+		if (gameManager)
+			transform.localEulerAngles = gameManager.GameTime * 360f * axis.normalized;
+		else
+			transform.localEulerAngles += (Time.deltaTime / 3600) * 360f * axis.normalized;
 	}
 }

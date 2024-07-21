@@ -38,14 +38,10 @@ public class Worldificate : MonoBehaviour
 		{
 			if (noiseOffset ==  Vector3.zero)
 			{
-				try
-				{
+				if (FindObjectOfType<GameManager>())
 					noiseOffset = FindObjectOfType<GameManager>().NoiseOffset;
-				}
-				catch
-				{
-					return;
-				}
+				else
+					noiseOffset = Vector3.one * Random.Range(-9999,9999);
 				Debug.Log("Noise Offset is " + noiseOffset);
 				return;
 			}

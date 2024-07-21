@@ -47,14 +47,14 @@ Material:
     m_Floats:
     - _QueueControl: 0
     - _QueueOffset: 50
-    - _darknessThreshold: 0.15
+    - _darknessThreshold: 0.05
     - _densityScale: 0.11
     - _lightAbsorb: 2
     - _lightStepSize: 0.06
-    - _numLightSteps: 16
-    - _numSteps: 64
+    - _numLightSteps: 1
+    - _numSteps: 16
     - _stepSize: 0.01
-    - _transmittance: 1
+    - _transmittance: 2
     m_Colors:
     - _Color: {r: 0.995283, g: 1, b: 0.99979883, a: 0}
     - _ShadowColor: {r: 0.52950335, g: 0.6103873, b: 0.6886792, a: 0}

@@ -51,6 +51,7 @@ MonoBehaviour:
   cloudLife: 60
   cloudLayer: 108
   cloudHeightVariance: 0.25
+  cloudSizeVariance: 0.1
   cloudLifeSize:
     serializedVersion: 2
     m_Curve:
@@ -64,16 +65,7 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.9
+      time: 0.5
       value: 1
       inSlope: 0
       outSlope: 0

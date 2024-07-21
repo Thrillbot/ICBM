@@ -29,7 +29,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3050
+  m_CustomRenderQueue: 3000
   stringTagMap:
     MotionVector: User
   disabledShaderPasses:
@@ -225,11 +225,11 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - Vector1_057b251310804167ac30a1365991b3be: 0.3
-    - Vector1_1669063c86044de9bbb3e40338d78fca: 10
+    - Vector1_057b251310804167ac30a1365991b3be: 0.4
+    - Vector1_1669063c86044de9bbb3e40338d78fca: 1
     - Vector1_34e06c9be2c74a6c889a65d22c6132b2: 112.5
     - Vector1_7060a92aae55426883f2a2ff8b458b0e: 2
-    - Vector1_df0b0d029ff044f0a33dca5478bbfaea: 10
+    - Vector1_df0b0d029ff044f0a33dca5478bbfaea: 5
     - _ANISOTROPY: 1
     - _AORemapMax: 1
     - _AORemapMin: 0
