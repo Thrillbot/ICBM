@@ -40,6 +40,8 @@ public class Part : NetworkBehaviour
 
 	protected bool hasAuthority = false;
 
+	protected bool dead;
+
 	private void Awake()
 	{
 		// Get the Rewired Player object for this player and keep it for the duration of the character's lifetime
@@ -53,6 +55,9 @@ public class Part : NetworkBehaviour
 
 	public virtual void FixedUpdate()
 	{
+		if (dead)
+			return;
+
 		if (!hasAuthority)
 		{
 			return;
@@ -81,13 +86,13 @@ public class Part : NetworkBehaviour
 			if (!rootRigidbody) return;
 		}
 
-		rootRigidbody.AddForce(transform.position.normalized * Universe.Gravity * _mass); // Apply gravity towards planet center.  There's not enough gravity fall off at these distances to include it
-
 		Vector3 localUp = transform.position.normalized; // Local Up
 		Vector3 localRight = Vector3.Cross(localUp, Vector3.forward); // Local Right
 
 		if (transform.root == transform)
 		{
+			rootRigidbody.AddForce(-transform.position.normalized * Universe.CalculateGravity(_mass)); // Apply gravity towards planet center.  There's not enough gravity fall off at these distances to include it
+
 			altitude = transform.position.magnitude - Universe.SeaLevel;
 			airPressure = (Universe.KarmanLine - altitude) / Universe.KarmanLine; // Adjust based on your Universe class
 			airPressure = Mathf.Clamp(airPressure, 0.0f, 1.0f); // Clamp to [0, 1]
@@ -110,11 +115,12 @@ public class Part : NetworkBehaviour
 			rootRigidbody.AddForce(localRight * forceMagnitude);
 
 			// Lift (Up/Down) based on alignment of forward vector and velocity times by air pressure
-			rootRigidbody.AddForce(Vector3.Cross(transform.right, rootRigidbody.velocity) * Vector3.Dot(transform.forward, rootRigidbody.velocity) * airPressure * airPressure * 0.025f);
 			ApplyTorqueToAlignWithVelocity();
-		}
 
-		rootRigidbody.AddForce(-rootRigidbody.velocity * airPressure * drag); // Apply drag
+			rootRigidbody.AddForce(-rootRigidbody.velocity * airPressure * drag); // Apply drag
+		}
+		rootRigidbody.AddForce(Mathf.Sign(Vector3.Dot(rootRigidbody.velocity.normalized, transform.forward)) * transform.position.normalized * airPressure * drag * Mathf.Abs(1f - Vector3.Dot(rootRigidbody.velocity.normalized, transform.forward)) * 0.1f); // Apply Lift
+
 
 		if (!armed && transform.position.sqrMagnitude > Universe.GetPointOnPlanet(transform.position).sqrMagnitude)
 		{
@@ -125,6 +131,9 @@ public class Part : NetworkBehaviour
 
 	private void LateUpdate()
 	{
+		if (dead)
+			return;
+
 		if (armed && lineRenderer)
 		{
 			DrawTrajectory();
@@ -133,16 +142,25 @@ public class Part : NetworkBehaviour
 
 	public void Abort ()
 	{
-		DestroySelf();
+		if (!dead)
+		{
+			DestroySelf();
+		}
 	}
 
 	void DestroySelf ()
 	{
+		if (dead)
+			return;
+		dead = true;
 		builder.DestroyPart(gameObject, armed, transform.position, explosionRadius, explosionDamage, GetComponent<ControlModule>() ? 1 : 0);
 	}
 
 	void ApplyTorqueToAlignWithVelocity()
 	{
+		if (dead)
+			return;
+
 		Vector3 velocityDirection = rootRigidbody.velocity.normalized;
 		Vector3 forwardDirection = transform.forward;
 
@@ -175,6 +193,16 @@ public class Part : NetworkBehaviour
 
 	void DrawTrajectory()
 	{
+		if (dead)
+			return;
+
+		if (GetComponent<Rigidbody>() == null || GetComponent<Rigidbody>().isKinematic)
+		{
+			lineRenderer.positionCount = 0;
+			mapLineRenderer.positionCount = 0;
+			return;
+		}
+
 		List<Vector3> points = new List<Vector3>();
 		Vector3 currentPosition = transform.position;
 		Vector3 currentVelocity = rootRigidbody.velocity;
@@ -186,19 +214,13 @@ public class Part : NetworkBehaviour
 			Vector3 tempPosition = currentPosition;
 			Vector3 tempVelocity = currentVelocity;
 
-			foreach (Part p in transform.GetComponentsInChildren<Part>())
-			{
-				tempVelocity += tempPosition.normalized * Universe.Gravity * p._mass * timeStep; // Apply gravity towards the center
-			}
-
 			predictedAltitude = tempPosition.magnitude - Universe.SeaLevel;
 			predictedAirPressure = (Universe.KarmanLine - predictedAltitude) / Universe.KarmanLine; // Adjust based on your Universe class
 			predictedAirPressure = Mathf.Clamp(predictedAirPressure, 0.0f, 1.0f); // Clamp to [0, 1]
-			foreach (Part p in transform.GetComponentsInChildren<Part>())
-			{
-				tempVelocity += -tempVelocity * predictedAirPressure * p.drag * timeStep; // Apply drag
-			}
 
+			tempVelocity += -tempPosition.normalized * Universe.CalculateGravity(_mass) * timeStep; // Apply gravity towards the center
+			tempVelocity += -tempVelocity * predictedAirPressure * drag * timeStep; // Apply drag
+			
 			// Update position based on new velocity
 			currentPosition += tempVelocity * timeStep;
 			currentVelocity = tempVelocity;
@@ -231,20 +253,6 @@ public class Part : NetworkBehaviour
 		armed = newValue;
 	}
 
-	Vector3 FindPartOffset(Vector3 direction, Part part)
-	{
-		Vector3 offset;
-		if (Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
-		{
-			offset = transform.up * part.dimensions.x * 0.5f * Mathf.Sign(direction.x);
-		}
-		else
-		{
-			offset = transform.forward * part.dimensions.y * 0.5f * Mathf.Sign(direction.y);
-		}
-		return offset;
-	}
-
 	public override void OnStartAuthority ()
 	{
 		base.OnStartAuthority();
@@ -262,7 +270,6 @@ public class Part : NetworkBehaviour
 					transform.localEulerAngles = Vector3.zero;
 					transform.localScale = Vector3.one * 10f;
 					transform.localPosition = new Vector3(0, 0, -1.5f);
-					GetComponent<ControlModule>().launchPad = b.launchPad;
 					b.craftHead = gameObject;
 				}
 				else
@@ -284,22 +291,6 @@ public class Part : NetworkBehaviour
 					GetComponent<Part>().attachedCollider = b.currentHitCollider.GetComponent<Collider>();
 				}
 				break;
-			}
-		}
-	}
-
-	private void OnDrawGizmos()
-	{
-		Gizmos.color = Color.blue;
-		Gizmos.DrawWireCube(transform.position, new Vector3(dimensions.x, 0, dimensions.y));
-
-		if (transform.parent == null)
-		{
-			Gizmos.color = Color.red;
-			foreach (SphereCollider c in transform.GetComponentsInChildren<SphereCollider>())
-			{
-				if (c.enabled)
-					Gizmos.DrawSphere(-c.transform.parent.localPosition + FindPartOffset(c.transform.localPosition, this), 0.01f);
 			}
 		}
 	}

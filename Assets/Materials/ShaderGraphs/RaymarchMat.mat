@@ -45,8 +45,11 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AmbientLight: 0.01
     - _QueueControl: 0
     - _QueueOffset: 50
+    - _TerminatorOffset: -1.5
+    - _TerminatorWidth: 20
     - _darknessThreshold: 0.05
     - _densityScale: 0.11
     - _lightAbsorb: 2

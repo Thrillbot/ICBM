@@ -19,18 +19,20 @@ public class Thruster : Part
 
 	public override void FixedUpdate()
 	{
+		if (dead) return;
+
 		base.FixedUpdate();
 
 		if (fuelCheck)
 		{
 			ParticleSystem.MainModule temp = smoke.main;
-			temp.startSizeMultiplier = throttle * 5f;
+			temp.startSizeMultiplier = throttle * 40f;
+			thrusterAudio.volume = throttle;
 
 			if (!smoke.isPlaying)
 			{
 				thrusterAudio.Play();
 				thrusterAudio.time = Random.value * thrusterAudio.clip.length;
-				thrusterAudio.volume = throttle;
 				smoke.Play();
 			}
 		}
@@ -48,6 +50,8 @@ public class Thruster : Part
 		if (!transform.root.GetComponent<Rigidbody>() || transform.root.GetComponent<Rigidbody>().isKinematic) return;
 		
 		throttle = builder.Throttle;
+
+		if (dead || gameObject == null || smoke == null || thrusterAudio == null) return;
 		CommandSetThrottle(throttle, fuelCheck);
 
 		if (fuelCheck)
@@ -65,7 +69,7 @@ public class Thruster : Part
 
 	private void Update()
 	{
-		if (!hasAuthority) return;
+		if (!hasAuthority || dead) return;
 
 		if (!isArmed)
 		{
@@ -88,6 +92,7 @@ public class Thruster : Part
 	[Command(requiresAuthority = false)]
 	public void CommandSetThrottle (float throttleSet, bool fuelCheckSet)
 	{
+		if (dead || gameObject == null || smoke == null || thrusterAudio == null) return;
 		throttle = throttleSet;
 		fuelCheck = fuelCheckSet;
 		SetThrottle(-1, throttleSet);
@@ -96,16 +101,17 @@ public class Thruster : Part
 	[ClientRpc]
 	public void SetThrottle (float oldValue, float newValue)
 	{
+		if (dead || gameObject == null || smoke == null || thrusterAudio == null) return;
 		if (fuelCheck)
 		{
 			ParticleSystem.MainModule temp = smoke.main;
-			temp.startSizeMultiplier = throttle * 5f;
+			temp.startSizeMultiplier = throttle * 40f;
+			thrusterAudio.volume = throttle;
 
 			if (!smoke.isPlaying)
 			{
 				thrusterAudio.Play();
 				thrusterAudio.time = Random.value * thrusterAudio.clip.length;
-				thrusterAudio.volume = throttle;
 				smoke.Play();
 			}
 		}

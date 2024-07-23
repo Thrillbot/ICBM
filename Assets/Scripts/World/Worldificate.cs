@@ -21,6 +21,7 @@ public class Worldificate : MonoBehaviour
 	public float maxHeight = 10;
 	public AnimationCurve yValueCurve;
 	public bool generate;
+	public bool fakePlanet;
 	public bool pauseUniverse = true;
 
 	private Vector3 workerVec;
@@ -47,7 +48,11 @@ public class Worldificate : MonoBehaviour
 			}
 
 			SetLoading(false, true);
-			equator = new Dictionary<int, Vector3>();
+			if (!fakePlanet)
+			{
+				//Debug.Log("Not Fake Planet!  Creating Equator!");
+				equator = new Dictionary<int, Vector3>();
+			}
 			planetResolution = 360f / planetResolution;
 
 			for (int i = 0; i < chunks.Length; i++)
@@ -88,7 +93,10 @@ public class Worldificate : MonoBehaviour
 				angle = Vector3.SignedAngle(Vector3.up, chunk.transform.TransformPoint(vertices[i]).normalized, Vector3.forward);
 				if (angle < 0)
 					angle += 360;
-				equator.TryAdd((int)(angle / planetResolution), chunk.transform.TransformPoint(vertices[i]));
+				if (!fakePlanet)
+				{
+					equator.TryAdd((int)((angle / 360f) * planetResolution), chunk.transform.TransformPoint(vertices[i]));
+				}
 			}
 
 			if (i == vertices.Length/2f)
@@ -116,7 +124,7 @@ public class Worldificate : MonoBehaviour
 
 	private void OnDrawGizmos()
 	{
-		if (equator == null)
+		if (equator == null || fakePlanet)
 			return;
 		Gizmos.color = Color.red;
 		for (int i = 0; i < planetResolution; i++)

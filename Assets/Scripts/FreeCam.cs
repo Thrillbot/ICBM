@@ -1,9 +1,11 @@
 using UnityEngine;
+using Rewired;
 
 public class FreeCam : MonoBehaviour
 {
 	public Transform cameraTransform;
 	public float sensitivity;
+	public float shiftModifier = 4f;
 	public float zoomSensitivity;
 	public Vector3 axis;
 	public Vector3 lowerLimits = new Vector3(-200, 0, 5);
@@ -19,17 +21,24 @@ public class FreeCam : MonoBehaviour
 	private Vector3 workerVec;
 	private bool buildMode;
 
+	private Player player;
+	private void Awake()
+	{
+		// Get the Rewired Player object for this player and keep it for the duration of the character's lifetime
+		player = ReInput.players.GetPlayer(0);
+	}
+
 	void Update()
 	{
 		if (Universe.paused || Universe.loading)
 			return;
 
-		transform.localEulerAngles += axis * Input.GetAxis("Horizontal") * Time.deltaTime * sensitivity;
+		transform.localEulerAngles += axis * -player.GetAxis("Horizontal") * Time.deltaTime * sensitivity * (player.GetButton("Sprint") ? shiftModifier : 1);
 
 		workerVec = cameraTransform.localPosition;
-		workerVec.z += Input.GetAxis("Vertical") * Time.deltaTime * sensitivity;
-		workerVec.y -= Input.GetAxis("Mouse ScrollWheel") * Time.deltaTime * zoomSensitivity;
-		workerVec.z -= (Input.GetAxis("Mouse ScrollWheel") > 0 ? Input.GetAxis("Mouse ScrollWheel") : 0) * Time.deltaTime * zoomSensitivity;
+		workerVec.z += player.GetAxis("Vertical") * Time.deltaTime * sensitivity;
+		workerVec.y -= player.GetAxis("Zoom") * Time.deltaTime * zoomSensitivity;
+		workerVec.z -= (player.GetAxis("Zoom") > 0 ? player.GetAxis("Zoom") : 0) * Time.deltaTime * zoomSensitivity;
 
 		workerVec.x = 0;
 		if (buildMode)

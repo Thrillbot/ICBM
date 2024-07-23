@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Wobble : MonoBehaviour
@@ -11,6 +9,7 @@ public class Wobble : MonoBehaviour
 	private Vector3 startPositon;
 	private Vector3 targetPosition;
 	private Vector3 currentPosition;
+
 	private float time;
 
 	private void Start()

@@ -21,8 +21,9 @@ public sealed class Universe
     public static float killAltitude = 80;
 
 	private static GameObject planet;
-	private static float gravity = -0.1f;
+	private static float gravity = 0.000000667f;
 	private static float seaLevel = 100f;
+    private static float planetMass = 1499250374.81f;
     private static float karmanLine = 25f;
 
 	private static Universe instance = null;
@@ -52,7 +53,6 @@ public sealed class Universe
         return point;
     }
 
-    [Command]
     public static Vector3 GetPointOnPlanet (Vector3 pos)
 	{
 		Vector3 point = pos;
@@ -60,30 +60,18 @@ public sealed class Universe
         float angle = Vector3.SignedAngle(point.normalized, Vector3.up, -Vector3.forward);
         if (angle < 0)
             angle += 360f;
-        int vertexIndex = (int)(angle / planetResolution);
-        int nextIndex = (int)((angle + planetResolution) / planetResolution);
+
+        angle = angle / 360f * planetResolution;
 
         try
         {
-            Vector3 pointOne = equator[vertexIndex];
-            Vector3 pointTwo = equator[nextIndex];
-            if (nextIndex >= equator.Count)
-            {
-                pointTwo = pointOne;
-                pointOne = equator[0];
-            }
-
-            point = Vector3.Lerp(pointOne, pointTwo, (planetResolution * nextIndex - planetResolution * vertexIndex) / planetResolution);
-            point = planetTransform.TransformPoint(point);
-
-            return point;
+			point = equator[(int)angle];
+            return planetTransform.TransformPoint(point);
         }
         catch
         {
-
+            return Vector3.zero;
         }
-
-        return Vector3.zero;
     }
 
     public static bool DistanceCheck(Vector3 from, Vector3 to, float maxDistance)
@@ -119,8 +107,19 @@ public sealed class Universe
 		get { return seaLevel; }
 	}
 
-    public static float KarmanLine
+	public static float PlanetMass
+	{
+		get { return planetMass; }
+	}
+
+	public static float KarmanLine
     {
         get { return karmanLine; }
     }
+
+    public static float CalculateGravity (float mass)
+    {
+        return Gravity * PlanetMass / Mathf.Pow(SeaLevel, 2);
+
+	}
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -6,6 +7,7 @@ public class MainMenu : MonoBehaviour
 {
 	public string multiplayerSceneName;
 
+	public GameObject loadingScreen;
 	public GameObject mainMenuObject;
 	public GameObject settingsObject;
 
@@ -17,7 +19,31 @@ public class MainMenu : MonoBehaviour
 	private Vector3 cameraStart;
 	private Quaternion cameraStartRotation;
 	private float timer;
-	private IEnumerator lerpRoutine;
+	private int waypointIndex;
+
+	private void Start()
+	{
+		GoToMainMenu();
+
+		StartCoroutine(Initialize());
+	}
+
+	IEnumerator Initialize ()
+	{
+		yield return null;
+
+		loadingScreen.SetActive(false);
+	}
+
+	private void Update()
+	{
+		if (timer < 1 - Time.deltaTime / cameraLerpRate)
+			timer += Time.deltaTime / cameraLerpRate;
+		else
+			timer = 1;
+		cameraTransform.position = Vector3.Lerp(cameraStart, cameraWaypoints[waypointIndex].position, cameraLerpCurve.Evaluate(timer));
+		cameraTransform.rotation = Quaternion.Lerp(cameraStartRotation, cameraWaypoints[waypointIndex].rotation, cameraLerpCurve.Evaluate(timer));
+	}
 
 	public void GoToMultiplayer ()
 	{
@@ -29,9 +55,10 @@ public class MainMenu : MonoBehaviour
 		mainMenuObject.SetActive(true);
 		settingsObject.SetActive(false);
 
-		if (lerpRoutine != null) StopCoroutine(lerpRoutine);
-		lerpRoutine = LerpCamera(0);
-		StartCoroutine(lerpRoutine);
+		cameraStart = cameraTransform.position;
+		cameraStartRotation = cameraTransform.rotation;
+		waypointIndex = 0;
+		timer = 0;
 	}
 
 	public void GoToSettings()
@@ -39,27 +66,10 @@ public class MainMenu : MonoBehaviour
 		mainMenuObject.SetActive(false);
 		settingsObject.SetActive(true);
 
-		if (lerpRoutine != null) StopCoroutine(lerpRoutine);
-		lerpRoutine = LerpCamera(1);
-		StartCoroutine(lerpRoutine);
-	}
-
-	IEnumerator LerpCamera (int index)
-	{
-		//cameraWaypoints
-		timer = 0;
 		cameraStart = cameraTransform.position;
 		cameraStartRotation = cameraTransform.rotation;
-		while (timer < 1)
-		{
-			timer += Time.deltaTime / cameraLerpRate;
-			cameraTransform.position = Vector3.Lerp(cameraStart, cameraWaypoints[index].position, cameraLerpCurve.Evaluate(timer));
-			cameraTransform.rotation = Quaternion.Lerp(cameraStartRotation, cameraWaypoints[index].rotation, cameraLerpCurve.Evaluate(timer));
-			yield return null;
-		}
-
-		cameraTransform.position = cameraWaypoints[index].position;
-		cameraTransform.rotation = cameraWaypoints[index].rotation;
+		waypointIndex = 1;
+		timer = 0;
 	}
 
 	public void Exit ()

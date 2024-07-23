@@ -1,6 +1,4 @@
-using Rewired;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Decoupler : Part
@@ -14,17 +12,22 @@ public class Decoupler : Part
         if (!decoupling && isArmed && player.GetButtonUp("Launch"))
 		{
 			decoupling = true;
-			StartCoroutine(Decouple());
+			StartCoroutine(Stage());
 		}
     }
 
-	IEnumerator Decouple ()
+	IEnumerator Stage ()
 	{
-		Rigidbody childRigidbody = transform.GetChild(0).GetChild(0).GetComponent<Rigidbody>();
+		Rigidbody childRigidbody = transform.GetChild(0).GetComponent<Rigidbody>();
+		if (childRigidbody == null)
+		{
+			yield break;
+		}
 		transform.root.GetComponent<Rigidbody>().AddForce(transform.forward * decoupleForce);
-		transform.GetChild(0).GetChild(0).transform.parent = null;
+		transform.GetChild(0).transform.parent = null;
 		childRigidbody.isKinematic = false;
 		childRigidbody.GetComponent<Part>().rootRigidbody = childRigidbody;
+
 		foreach (Part p in childRigidbody.GetComponentsInChildren<Part>())
 		{
 			p.rootRigidbody = childRigidbody;
@@ -36,6 +39,6 @@ public class Decoupler : Part
 		childRigidbody.angularVelocity = transform.root.GetComponent<Rigidbody>().angularVelocity;
 		childRigidbody.AddForce(-transform.forward * decoupleForce);
 
-		Destroy(gameObject);
+		builder.Stage(gameObject);
 	}
 }

@@ -12,7 +12,6 @@ public class BaseSpawner : NetworkBehaviour
 	public float health = 100;
 	public Image healthbar;
 
-	public GameObject planet;
 	[SyncVar(hook = "SetPieSlice")]
 	public Transform pieSlice;
 	public int playerId = 0;
@@ -148,7 +147,7 @@ public class BaseSpawner : NetworkBehaviour
 
 	private void Update()
 	{
-        //if (isLocalPlayer)
+		//if (isLocalPlayer)
 		//	debugText.text = "Initialized = " + initialized;
 
 		if (!isLocalPlayer || !initialized)
@@ -188,7 +187,6 @@ public class BaseSpawner : NetworkBehaviour
 			transform.localEulerAngles = workerVec;
 
 			workerVec = GetPointOnPlanet(GetMousePointOnPlane());
-			//debugText.text = workerVec.ToString() + " | " + pieSlice.forward;
 
 			if (Vector3.SignedAngle(workerVec.normalized, pieSlice.forward, Vector3.forward) > 1 && Vector3.SignedAngle(workerVec.normalized, pieSlice.forward, Vector3.forward) < 44)
 			{

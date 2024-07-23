@@ -125,17 +125,6 @@ public class Builder : NetworkBehaviour
 						if (craftHead == null)
 						{
 							CmdSpawnPart(-1, netIdentity);
-							/*
-							craftHead = Instantiate(craftHeadPrefab);
-							NetworkServer.Spawn(craftHead, connectionToClient);
-							//craftHead = Instantiate(craftHeadPrefab);
-
-							craftHead.transform.parent = transform;
-							craftHead.transform.localEulerAngles = Vector3.zero;
-							craftHead.transform.localScale = Vector3.one * 10f;
-							craftHead.transform.localPosition = new Vector3(0, 0, -1.5f);
-							craftHead.GetComponent<ControlModule>().launchPad = launchPad;
-							*/
 						}
 
 						return;
@@ -149,39 +138,15 @@ public class Builder : NetworkBehaviour
 					{
 						ghostPart.SetActive(true);
 
-						//ghostPart.transform.position = h.transform.TransformPoint(h.transform.localPosition) - FindPartOffset(h.transform.localPosition, ghostPart.GetComponent<Part>());
-						//ghostPart.transform.position = h.transform.parent.position + h.transform.localPosition.normalized;
 						ghostPart.transform.parent = h.collider.transform.parent;
-						ghostPart.transform.localPosition = FindPartOffset(h.transform.localPosition, ghostPart.GetComponent<Part>(), h.transform);
+						ghostPart.transform.localPosition = h.collider.transform.localPosition + FindPartOffset(h.collider.transform.localPosition, ghostPart.GetComponent<Part>(), h.collider.transform);
 
-						ghostPart.transform.localPosition = h.collider.transform.localPosition * 2f;
-
-						ghostPart.transform.LookAt(ghostPart.transform.position + launchPad.up);
+						ghostPart.transform.localEulerAngles = Vector3.zero;
 
 						if (player.GetButtonUp("Interact"))
 						{
 							currentHitCollider = h.collider;
-							/*
-							GameObject newPart = Instantiate(parts[partIndex]);
-
-							newPart.transform.parent = h.collider.transform.parent;
-							newPart.transform.SetAsFirstSibling();
-							newPart.transform.localPosition = ghostPart.transform.localPosition;
-							newPart.transform.localRotation = ghostPart.transform.localRotation;
-
-
-							foreach (SphereCollider s in newPart.transform.GetComponentsInChildren<SphereCollider>())
-							{
-								if (Vector3.Dot(s.transform.localPosition.normalized, h.collider.transform.parent.position - s.transform.position) > 0.8f)
-								{
-									s.enabled = false;
-									break;
-								}
-							}
-
-							newPart.GetComponent<Part>().attachedCollider = h.collider;
-							*/
-							CmdSpawnPart(partIndex, netIdentity);//, ghostPart.transform.localPosition, ghostPart.transform.localRotation, h.collider.GetComponent<NetworkIdentity>());
+							CmdSpawnPart(partIndex, netIdentity);
 							h.collider.enabled = false;
 						}
 					}
@@ -191,9 +156,9 @@ public class Builder : NetworkBehaviour
 					ghostPart.SetActive(false);
 					ghostPart.transform.parent = launchPad;
 
-					h.collider.gameObject.GetComponent<Part>().attachedCollider.enabled = true;
+					h.collider.transform.parent.gameObject.GetComponent<Part>().attachedCollider.enabled = true;
 
-					CmdDestroyPart(h.collider.gameObject.GetComponent<NetworkIdentity>());
+					CmdDestroyPart(h.collider.transform.parent.gameObject.GetComponent<NetworkIdentity>());
 				}
 			}
 		}
@@ -239,7 +204,6 @@ public class Builder : NetworkBehaviour
 				newPart.transform.localEulerAngles = Vector3.zero;
 				newPart.transform.localScale = Vector3.one * 10f;
 				newPart.transform.localPosition = new Vector3(0, 0, -1.5f);
-				newPart.GetComponent<ControlModule>().launchPad = launchPad;
 				craftHead = newPart;
 			}
 			else
@@ -278,22 +242,19 @@ public class Builder : NetworkBehaviour
 				NetworkServer.Spawn(explosionGO);
 			}
 
-			/*
-			foreach (BaseSpawner b in FindObjectsOfType<BaseSpawner>())
-			{
-				if ((b.transform.position - transform.position).sqrMagnitude <= explosionRadius * explosionRadius)
-				{
-					b.RpcApplyDamage(explosionDamage);
-				}
-			}
-			*/
-
-			NetworkServer.Destroy(part.gameObject);
+			NetworkServer.Destroy(part);
 		}
 	}
 
 	[Command(requiresAuthority = false)]
-	void CmdSpawnPart (int index, NetworkIdentity identity)//, Vector3 pos, Quaternion rot, NetworkIdentity col)
+	public void Stage(GameObject part)
+	{
+		if (part != null)
+			NetworkServer.Destroy(part.gameObject);
+	}
+
+	[Command(requiresAuthority = false)]
+	void CmdSpawnPart (int index, NetworkIdentity identity)
 	{
 		GameObject newPart;
 		if (index == -1)
@@ -309,22 +270,32 @@ public class Builder : NetworkBehaviour
 	[Command(requiresAuthority = false)]
 	void CmdDestroyPart (NetworkIdentity netID)
 	{
-		NetworkServer.Destroy(netID.gameObject);
+		if (netID != null)
+			NetworkServer.Destroy(netID.gameObject);
 	}
 
 	Vector3 FindPartOffset(Vector3 direction, Part part, Transform hit)
 	{
+		if (hit.parent.GetComponent<Part>() == null)
+		{
+			Debug.Log(hit.name);
+			Debug.Log("Attachment Point doesn't belong to a part!");
+			return Vector3.zero;
+		}
+
 		direction = direction.normalized;
 		Vector3 offset;
-		if (Mathf.Abs(direction.x) > Mathf.Abs(direction.z))
+
+		if (Mathf.Abs(direction.y) > Mathf.Abs(direction.z))
 		{
-			offset = hit.parent.forward * part.dimensions.x * 0.5f * Mathf.Sign(direction.x);
+			offset = Vector3.up * (part.dimensions.x / 2f) * Mathf.Sign(direction.y);
 		}
 		else
 		{
-			offset = hit.parent.up * part.dimensions.y * 0.5f * Mathf.Sign(direction.z);
+			offset = Vector3.forward * (part.dimensions.y / 2f) * Mathf.Sign(direction.z);
 		}
-		return offset * part.transform.localScale.x;
+		Debug.Log("Offset: " + offset);
+		return offset;
 	}
 
 	void SpawnGhostPart ()
