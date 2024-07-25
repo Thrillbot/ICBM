@@ -6,11 +6,10 @@ using System.Collections.Generic;
 
 public class BasicNetManager : NetworkManager
 {
-	public TMP_InputField ipField;
-	public TMP_InputField portField;
-
+	[Header("Bespoke Stuff")]
 	public string worldSceneName;
 	public GameObject basePrefab;
+	public PlayerSeat[] playerSeatPositions;
 
 	List<LobbyPlayer> players;
 	List<PlayerConn> playerConns;
@@ -21,6 +20,13 @@ public class BasicNetManager : NetworkManager
 		public CSteamID steamID;
 		public NetworkConnectionToClient conn;
 		public string playerName;
+	}
+
+	[System.Serializable]
+	public struct PlayerSeat
+	{
+		public Transform seat;
+		public LobbyPlayer player;
 	}
 
 	public override void Update()
@@ -66,6 +72,7 @@ public class BasicNetManager : NetworkManager
 		//base.OnServerAddPlayer(conn);
 
 		GameObject player = Instantiate(playerPrefab);
+		player.name = "Joining...";
 		LobbyPlayer lobbyPlayer = player.GetComponent<LobbyPlayer>();
 		//NetworkServer.Spawn(player, conn);
 
@@ -98,6 +105,16 @@ public class BasicNetManager : NetworkManager
 		playerConns.Add(tempPConn);
 
 		//player.name = $"{SteamFriends.GetFriendPersonaName(steamId)}";
+		for (int i = 0; i < playerSeatPositions.Length; i++)
+		{
+			if (playerSeatPositions[i].player == null)
+			{
+				player.transform.position = playerSeatPositions[i].seat.position;
+				player.transform.rotation = playerSeatPositions[i].seat.rotation;
+				playerSeatPositions[i].player = player.GetComponent<LobbyPlayer>();
+				break;
+			}
+		}
 		players.Add(lobbyPlayer);
 
 		Debug.Log("Initializing Player: " + conn.connectionId);
@@ -175,22 +192,6 @@ public class BasicNetManager : NetworkManager
         startPositions.RemoveAt(index);
 
 		return startPos;
-	}
-
-	public void IPOrPortChange ()
-	{
-		networkAddress = ipField.text;
-		// only show a port field if we have a port transport
-		// we can't have "IP:PORT" in the address field since this only
-		// works for IPV4:PORT.
-		// for IPV6:PORT it would be misleading since IPV6 contains ":":
-		// 2001:0db8:0000:0000:0000:ff00:0042:8329
-		if (Transport.active is PortTransport portTransport)
-		{
-			// use TryParse in case someone tries to enter non-numeric characters
-			if (ushort.TryParse(portField.text, out ushort port))
-				portTransport.Port = port;
-		}
 	}
 
 	public void AddPlayerToList(System.Func<string> getPersonaName)

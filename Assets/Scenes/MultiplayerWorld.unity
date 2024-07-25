@@ -3280,7 +3280,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 5358898349318895116, guid: f57b4539f01254048b0b17b1260d1c86, type: 2}
-  m_audioClip: {fileID: 8300000, guid: 096541d20e3879e4fa22c5029605db56, type: 3}
+  m_audioClip: {fileID: 8300000, guid: d55ac8a71fe092f489407815804604f1, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.5
   m_Pitch: 1
@@ -5467,6 +5467,10 @@ PrefabInstance:
     - target: {fileID: 161337018810983276, guid: a828051e412e5b14aa850c8e4a123807, type: 3}
       propertyPath: m_Name
       value: CloudSpawner
+      objectReference: {fileID: 0}
+    - target: {fileID: 161337018810983276, guid: a828051e412e5b14aa850c8e4a123807, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5574200464878676891, guid: a828051e412e5b14aa850c8e4a123807, type: 3}
       propertyPath: m_LocalPosition.x

@@ -8,15 +8,13 @@ using System.Collections;
 
 public class SteamLobby : MonoBehaviour
 {
-	public string multiplayerSceneName = "Lobby";
+	//public string multiplayerSceneName = "Lobby";
 	public NetworkManager networkManager;
 	public GameObject lobbyUI;
 	public GameObject preGameUI;
 	public GameObject launchGameButton;
 	public string worldSceneName;
-	public TMP_Text playerListText;
 	public GameObject networkCanvas;
-	public string lobbyScene;
 	public ulong currentLobbyID;
 
 	protected Callback<LobbyCreated_t> lobbyCreated;
@@ -41,6 +39,7 @@ public class SteamLobby : MonoBehaviour
 		StartCoroutine(WhileNotInitialized());
 	}
 
+	/*
 	void Update ()
 	{
 		playerListText.text = "";
@@ -50,6 +49,7 @@ public class SteamLobby : MonoBehaviour
 			playerListText.text += p.playerName + '\n';
 		}
 	}
+	*/
 
 	IEnumerator WhileNotInitialized ()
 	{
@@ -67,6 +67,7 @@ public class SteamLobby : MonoBehaviour
 	{
 		if (callback.m_eResult != EResult.k_EResultOK)
 		{
+			networkCanvas.SetActive(true);
 			lobbyUI.SetActive(true);
 			preGameUI.SetActive(false);
 			return;
@@ -91,7 +92,8 @@ public class SteamLobby : MonoBehaviour
 		networkManager.networkAddress = hostAddress;
 		networkManager.StartClient();
 
-		SceneManager.LoadScene(multiplayerSceneName);
+		//SceneManager.LoadScene(multiplayerSceneName);
+		networkCanvas.SetActive(true);
 		lobbyUI.SetActive(false);
 		preGameUI.SetActive(true);
 	}
@@ -123,10 +125,12 @@ public class SteamLobby : MonoBehaviour
 
 	void OnSceneLoaded (Scene scene, LoadSceneMode mode)
 	{
-		if (scene.name == lobbyScene)
+		/*
+		if (scene.name == multiplayerSceneName)
 		{
 			networkCanvas.SetActive(true);
 		}
+		*/
 		if (scene.name == worldSceneName)
 		{
 			lobbyUI.SetActive(false);
@@ -143,6 +147,7 @@ public class SteamLobby : MonoBehaviour
 		Debug.Log("Confirmed, Unique Player");
 		playerList.Add(name);
 
+		/*
 		Debug.Log("Updating Player List Text");
 		playerListText.text = "";
 		foreach (string s in playerList)
@@ -150,5 +155,6 @@ public class SteamLobby : MonoBehaviour
 			Debug.Log("Adding Player Name: " + s);
 			playerListText.text += s + '\n';
 		}
+		*/
 	}
 }

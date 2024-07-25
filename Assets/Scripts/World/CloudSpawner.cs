@@ -30,20 +30,7 @@ public class CloudSpawner : MonoBehaviour
 		clouds ??= new();
 		for (int i = 0; i < initialSpawnAmount; i++)
 		{
-			GameObject tempGo = Instantiate(cloudPrefab);
-			tempGo.transform.GetChild(0).localEulerAngles = Vector3.up * Random.Range(0, 360);
-			tempGo.transform.localEulerAngles = Vector3.forward * Random.Range(0, 360);
-			tempGo.transform.localScale *= (1f + (cloudSizeVariance * (Random.value * 2f - 1f)));
-			tempGo.transform.position = tempGo.transform.up * (cloudLayer + ((Random.value * 2f - 1f) * cloudHeightVariance));
-			tempGo.transform.parent = transform;
-
-			workerCloud = new()
-			{
-				life = cloudLife * Random.value,
-				gameObject = tempGo
-			};
-
-			clouds.Add(workerCloud);
+			SpawnCloud(true);
 		}
 	}
 
@@ -57,20 +44,7 @@ public class CloudSpawner : MonoBehaviour
 			if (timer >= 1)
 			{
 				timer = 0;
-				GameObject tempGo = Instantiate(cloudPrefab);
-				tempGo.transform.GetChild(0).localEulerAngles = Vector3.up * Random.Range(0, 360);
-				tempGo.transform.localEulerAngles = Vector3.forward * Random.Range(0, 360);
-				tempGo.transform.localScale *= (1f - (cloudSizeVariance * (Random.value * 2f - 1f)));
-				tempGo.transform.position = tempGo.transform.up * (cloudLayer + ((Random.value * 2f - 1f) * cloudHeightVariance));
-				tempGo.transform.parent = transform;
-
-				workerCloud = new()
-				{
-					life = cloudLife,
-					gameObject = tempGo
-				};
-
-				clouds.Add(workerCloud);
+				SpawnCloud();
 			}
 		}
 
@@ -83,5 +57,28 @@ public class CloudSpawner : MonoBehaviour
 
 			if (clouds[i].life <= 0) clouds.RemoveAt(i);
 		}
+	}
+
+	void SpawnCloud (bool randomizeLife = false)
+	{
+		GameObject tempGo = Instantiate(cloudPrefab);
+		tempGo.transform.GetChild(0).localEulerAngles = Vector3.up * Random.Range(0, 360);
+		tempGo.transform.localEulerAngles = Vector3.forward * Random.Range(0, 360);
+		tempGo.transform.localScale *= (1f + (cloudSizeVariance * (Random.value * 2f - 1f)));
+		tempGo.transform.position = tempGo.transform.up * (cloudLayer + ((Random.value * 2f - 1f) * cloudHeightVariance));
+		tempGo.transform.parent = transform;
+		tempGo.layer = gameObject.layer;
+		foreach (Renderer r in tempGo.transform.GetComponentsInChildren<Renderer>())
+		{
+			r.gameObject.layer = gameObject.layer;
+		}
+
+		workerCloud = new()
+		{
+			life = cloudLife * (randomizeLife ? Random.value : 1),
+			gameObject = tempGo
+		};
+
+		clouds.Add(workerCloud);
 	}
 }
