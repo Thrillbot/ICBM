@@ -1,3 +1,4 @@
+using Cinemachine.Utility;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,6 +25,7 @@ public class CloudSpawner : MonoBehaviour
 	private float timer = 0;
 	private List<Cloud> clouds;
 	private Cloud workerCloud;
+	private Vector3 workerVec;
 
 	private void Start()
 	{
@@ -58,14 +60,22 @@ public class CloudSpawner : MonoBehaviour
 			if (clouds[i].life <= 0) clouds.RemoveAt(i);
 		}
 	}
-
+	 
 	void SpawnCloud (bool randomizeLife = false)
 	{
 		GameObject tempGo = Instantiate(cloudPrefab);
-		tempGo.transform.GetChild(0).localEulerAngles = Vector3.up * Random.Range(0, 360);
+		tempGo.transform.GetChild(0).localEulerAngles = new Vector3(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360));
+
+		/*
 		tempGo.transform.localEulerAngles = Vector3.forward * Random.Range(0, 360);
-		tempGo.transform.localScale *= (1f + (cloudSizeVariance * (Random.value * 2f - 1f)));
 		tempGo.transform.position = tempGo.transform.up * (cloudLayer + ((Random.value * 2f - 1f) * cloudHeightVariance));
+		*/
+		workerVec = Random.onUnitSphere;
+		workerVec.z = -Mathf.Abs(workerVec.z);
+		tempGo.transform.position = workerVec * (cloudLayer + ((Random.value * 2f - 1f) * cloudHeightVariance));
+		tempGo.transform.LookAt(Vector3.zero);
+
+		tempGo.transform.localScale *= (1f + (cloudSizeVariance * (Random.value * 2f - 1f)));
 		tempGo.transform.parent = transform;
 		tempGo.layer = gameObject.layer;
 		foreach (Renderer r in tempGo.transform.GetComponentsInChildren<Renderer>())

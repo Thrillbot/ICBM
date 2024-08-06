@@ -1,8 +1,10 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
+	public string menuSceneName;
 	public GameObject mainMenuCanvas;
 	public GameObject networkCanvas;
 
@@ -56,6 +58,8 @@ public class MainMenu : MonoBehaviour
 
 	private void Update()
 	{
+		if (SceneManager.GetActiveScene().name != menuSceneName) return;
+
 		if (timer < 1 - Time.deltaTime / cameraLerpRate)
 			timer += Time.deltaTime / cameraLerpRate;
 		else

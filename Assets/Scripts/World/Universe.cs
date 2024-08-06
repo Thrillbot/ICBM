@@ -14,7 +14,7 @@ public sealed class Universe
     public static Transform planetTransform;
     public static Dictionary<int, Vector3> equator;
 
-	public static float planetResolution = 2048;
+	public static float planetResolution = 2520;
 
 	public static float dayLengthInMinutes = 60;
 

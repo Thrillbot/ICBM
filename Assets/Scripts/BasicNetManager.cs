@@ -1,8 +1,9 @@
-using TMPro;
 using UnityEngine;
 using Mirror;
 using Steamworks;
 using System.Collections.Generic;
+using static BasicNetManager;
+using Newtonsoft.Json;
 
 public class BasicNetManager : NetworkManager
 {
@@ -10,6 +11,7 @@ public class BasicNetManager : NetworkManager
 	public string worldSceneName;
 	public GameObject basePrefab;
 	public PlayerSeat[] playerSeatPositions;
+	public List<Color> playerColors;
 
 	List<LobbyPlayer> players;
 	List<PlayerConn> playerConns;
@@ -20,6 +22,8 @@ public class BasicNetManager : NetworkManager
 		public CSteamID steamID;
 		public NetworkConnectionToClient conn;
 		public string playerName;
+		public Color playerColor;
+		public Texture2D playerIcon;
 	}
 
 	[System.Serializable]
@@ -45,6 +49,20 @@ public class BasicNetManager : NetworkManager
 			if (PersonaStateChange.m_ulSteamID == player.steamID.m_SteamID)
 			{
 				player.SetName("", SteamFriends.GetFriendPersonaName(player.steamID));
+
+				Texture2D playerIcon = null;
+				if (SteamUtils.GetImageSize(SteamFriends.GetLargeFriendAvatar(player.steamID), out uint width, out uint height))
+				{
+					byte[] image = new byte[width * height * 4];
+					if (SteamUtils.GetImageRGBA(SteamFriends.GetLargeFriendAvatar(player.steamID), image, (int)(width * height * 4)))
+					{
+						playerIcon = new Texture2D((int)width, (int)height, TextureFormat.RGBA32, false, true);
+						playerIcon.LoadRawTextureData(image);
+						playerIcon.Apply();
+					}
+					player.RPCApplyIcon(SteamFriends.GetLargeFriendAvatar(player.steamID), (int)width, (int)height);
+				}
+
 				Debug.Log("Steam Name: " + player.name);
 				FindObjectOfType<SteamLobby>().AddNameToList(player.name);
 
@@ -54,6 +72,7 @@ public class BasicNetManager : NetworkManager
 					{
 						PlayerConn tempConn = playerConns[i];
 						tempConn.playerName = player.name;
+						tempConn.playerIcon = playerIcon;
 						playerConns[i] = tempConn;
 					}
 				}
@@ -71,9 +90,17 @@ public class BasicNetManager : NetworkManager
 		players ??= new();
 		//base.OnServerAddPlayer(conn);
 
+		Color chosenColor = Color.white;
+		if (playerColors.Count > 0)
+		{
+			chosenColor = playerColors[0];
+			playerColors.RemoveAt(0);
+		}
+
 		GameObject player = Instantiate(playerPrefab);
 		player.name = "Joining...";
 		LobbyPlayer lobbyPlayer = player.GetComponent<LobbyPlayer>();
+
 		//NetworkServer.Spawn(player, conn);
 
 		CSteamID steamId = SteamMatchmaking.GetLobbyMemberByIndex(
@@ -81,6 +108,7 @@ public class BasicNetManager : NetworkManager
 		players.Count
 		);
 		lobbyPlayer.SetSteamID(new(), steamId);
+		lobbyPlayer.playerColor = chosenColor;
 
 		PersonaStateChangeCallback = Callback<PersonaStateChange_t>.Create(OnPersonaStateChangeHandler);
 
@@ -88,7 +116,8 @@ public class BasicNetManager : NetworkManager
 		PlayerConn tempPConn = new()
 		{
 			steamID = lobbyPlayer.steamID,
-			conn = conn
+			conn = conn,
+			playerColor = chosenColor
 		};
 
 		bool needsToRetreiveInformationFromInternet = SteamFriends.RequestUserInformation(lobbyPlayer.steamID, true);
@@ -96,11 +125,14 @@ public class BasicNetManager : NetworkManager
 		{
 			player.name = SteamFriends.GetFriendPersonaName(lobbyPlayer.steamID);
 			lobbyPlayer.SetName("", player.name);
-			Debug.Log("Steam Name: " + player.name);
 			FindObjectOfType<SteamLobby>().AddNameToList(player.name);
 
-			tempPConn.playerName = player.name;
+			if (SteamUtils.GetImageSize(SteamFriends.GetLargeFriendAvatar(lobbyPlayer.steamID), out uint width, out uint height))
+			{
+				lobbyPlayer.RPCApplyIcon(SteamFriends.GetLargeFriendAvatar(lobbyPlayer.steamID), (int)width, (int)height);
+			}
 
+			tempPConn.playerName = player.name;
 		}
 		playerConns.Add(tempPConn);
 
@@ -134,7 +166,15 @@ public class BasicNetManager : NetworkManager
     /// <param name="conn">Connection from client.</param>
     public override void OnServerDisconnect(NetworkConnectionToClient conn)
     {
-        base.OnServerDisconnect(conn);
+		for (int i = 0; i < playerConns.Count; i++)
+		{
+			if (playerConns[i].conn == conn)
+			{
+				playerColors.Add(playerConns[i].playerColor); break;
+			}
+		}
+
+		base.OnServerDisconnect(conn);
         //Player.ResetPlayerNumbers();
     }
 
@@ -148,14 +188,22 @@ public class BasicNetManager : NetworkManager
 		foreach (NetworkConnectionToClient conn in NetworkServer.connections.Values)
 		{
 			string playerName = "";
+			Texture2D playerIcon = null;
+			int playerIndex = -1;
 
-			foreach (PlayerConn p in playerConns)
+			for (int i = 0; i < playerConns.Count; i++)
 			{
-				if (p.conn == conn)
+				if (playerConns[i].conn == conn)
 				{
-					playerName = p.playerName;
+					playerName = playerConns[i].playerName;
+					playerIcon = playerConns[i].playerIcon;
+					playerIndex = i;
+					break;
 				}
 			}
+
+			if (playerIndex == -1)
+				return;
 
 			Transform startPos = GetStartPosition();
 			GameObject player = Instantiate(basePrefab, startPos.position, startPos.rotation);
@@ -164,6 +212,7 @@ public class BasicNetManager : NetworkManager
 
 			player.name = "Base - " + playerName;
 			player.GetComponent<BaseSpawner>().playerName = playerName;
+			player.GetComponent<BaseSpawner>().playerIcon = playerIcon;
 
 			// instantiating a "Player" prefab gives it the name "Player(clone)"
 			// => appending the connectionId is WAY more useful for debugging!
@@ -175,7 +224,8 @@ public class BasicNetManager : NetworkManager
 			//}
 			NetworkServer.AddPlayerForConnection(conn, player);
 			//player.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
-			player.SendMessage("Initialize", startPos.GetComponent<NetworkIdentity>().netId);
+
+			player.SendMessage("Initialize", playerIndex);
 		}
 	}
 

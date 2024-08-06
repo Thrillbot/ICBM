@@ -12,13 +12,15 @@ public class BaseSpawner : NetworkBehaviour
 	public float health = 100;
 	public Image healthbar;
 
-	[SyncVar(hook = "SetPieSlice")]
-	public Transform pieSlice;
+	public Transform[] pieSlices;
 	public int playerId = 0;
 
 	[SyncVar(hook = "SetName")]
 	public string playerName;
 	public TMP_Text nameTag;
+	[SyncVar(hook = "SetPlayerIcon")]
+	public Texture2D playerIcon;
+	public RawImage playerFlag;
 
 	private Vector3 workerVec;
 	private Player player;
@@ -45,22 +47,22 @@ public class BaseSpawner : NetworkBehaviour
 		set { visible = value; SetVisible(!value, value); }
 	}
 
-	public void Initialize(uint spawnPointNetID)
+	public void Initialize(int playerIndex)
 	{
-		InitializeRpc(spawnPointNetID);
+		InitializeRpc(playerIndex);
 	}
 
 	[ClientRpc]
-	public void InitializeRpc(uint spawnPointNetID)
+	public void InitializeRpc(int playerIndex)
 	{
 		if (isLocalPlayer)
 		{
-			foreach (NetworkIdentity i in FindObjectsOfType<NetworkIdentity>())
+			pieSlices = new Transform[840 / NetworkServer.connections.Count];
+			int index = 0;
+			for (int i = 840 / NetworkServer.connections.Count * playerIndex; i < 840 / (NetworkServer.connections.Count * playerIndex + 1); i++)
 			{
-				if (i.netId == spawnPointNetID)
-				{
-					SetPieSlice(transform, i.transform);
-				}
+				pieSlices[index] = Worldificate.chunkList[i].transform;
+				index++;
 			}
 
 			if (debugText == null)
@@ -75,9 +77,10 @@ public class BaseSpawner : NetworkBehaviour
 			}
 
 			Transform cam = FindObjectOfType<FreeCam>().transform;
-			cam.LookAt(pieSlice.transform.forward);
+			cam.LookAt(pieSlices[pieSlices.Length/2].forward);
 			cam.localEulerAngles = new Vector3(0, cam.localEulerAngles.y - 22.5f, 0);
 
+			transform.parent = Planet.transform;
 			SetInitialized(false, true);
 		}
 	}
@@ -100,12 +103,6 @@ public class BaseSpawner : NetworkBehaviour
 		NetworkServer.Destroy(gameObject);
 	}
 
-	void SetPieSlice(Transform oldValue, Transform newValue)
-	{
-		pieSlice = newValue;
-		transform.parent = pieSlice;
-	}
-
 	void SetVisible(bool oldValue, bool newValue)
 	{
 		visible = newValue;
@@ -126,6 +123,12 @@ public class BaseSpawner : NetworkBehaviour
 		playerName = newValue;
 		Debug.Log("Setting Player Name Tag: " + playerName);
 		nameTag.text = playerName;
+	}
+
+	public void SetPlayerIcon(Texture2D oldValue, Texture2D newValue)
+	{
+		playerIcon = newValue;
+		playerFlag.texture = newValue;
 	}
 
 	public void FocusBase ()
@@ -188,14 +191,17 @@ public class BaseSpawner : NetworkBehaviour
 
 			workerVec = GetPointOnPlanet(GetMousePointOnPlane());
 
-			if (Vector3.SignedAngle(workerVec.normalized, pieSlice.forward, Vector3.forward) > 1 && Vector3.SignedAngle(workerVec.normalized, pieSlice.forward, Vector3.forward) < 44)
+			Visible = false;
+
+			foreach (Transform t in pieSlices)
 			{
-				Visible = true;
+				if (Vector3.SignedAngle(workerVec.normalized, t.GetChild(0).forward, Vector3.forward) > 0 && Vector3.SignedAngle(workerVec.normalized, t.GetChild(0).forward, Vector3.forward) < 1)
+				{
+					Visible = true;
+					break;
+				}
 			}
-			else
-			{
-				Visible = false;
-			}
+
 			foreach (MeshRenderer m in GetComponentsInChildren<MeshRenderer>())
 			{
 				m.enabled = Visible;

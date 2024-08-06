@@ -51,11 +51,11 @@ Material:
     - _TerminatorOffset: -1.5
     - _TerminatorWidth: 20
     - _darknessThreshold: 0.05
-    - _densityScale: 0.11
-    - _lightAbsorb: 2
+    - _densityScale: 0.4
+    - _lightAbsorb: 4
     - _lightStepSize: 0.06
     - _numLightSteps: 1
-    - _numSteps: 16
+    - _numSteps: 32
     - _stepSize: 0.01
     - _transmittance: 2
     m_Colors:

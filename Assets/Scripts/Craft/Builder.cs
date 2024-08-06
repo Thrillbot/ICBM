@@ -15,9 +15,9 @@ public class Builder : NetworkBehaviour
 	public LayerMask uiLayers;
 	public GameObject tubeMask;
 	public GameObject launchButton;
-	public GameObject abortButton;
+	public GameObject flightControls;
 	public Image throttleVisual;
-	public GameObject throttlePanel;
+	public Image fuelVisual;
 	public GameObject controlButtons;
 
 	public Material ghostMaterial;
@@ -43,6 +43,8 @@ public class Builder : NetworkBehaviour
 
 	public float throttle;
 	private float throttleRampTime = 0.5f;
+	private float fuelLevel = 0;
+	private float maxFuel = 0;
 
 	void Awake()
 	{
@@ -83,8 +85,7 @@ public class Builder : NetworkBehaviour
 
 		if (craftHead == null)
 		{
-			abortButton.SetActive(false);
-			throttlePanel.SetActive(false);
+			flightControls.SetActive(false);
 		}
 
 		if (launchButton.activeInHierarchy && launchButton.GetComponent<MouseOverUI>().MousedOver)
@@ -94,6 +95,18 @@ public class Builder : NetworkBehaviour
 			throttle += player.GetAxis("Vertical") * (Time.deltaTime / throttleRampTime);
 			throttle = Mathf.Clamp01(throttle);
 			throttleVisual.fillAmount = throttle;
+
+			if (craftHead != null)
+			{
+				fuelLevel = 0;
+				maxFuel = 0;
+				foreach (FuelTank f in craftHead.GetComponentsInChildren<FuelTank>())
+				{
+					fuelLevel += f.fuel;
+					maxFuel += f.maxFuel;
+				}
+				fuelVisual.fillAmount = fuelLevel / maxFuel;
+			}
 		}
 		else
 		{
@@ -119,8 +132,7 @@ public class Builder : NetworkBehaviour
 						tubeMask.SetActive(true);
 						cam.target = tubeMask.transform;
 						cam.BuildMode = true;
-						abortButton.SetActive(false);
-						throttlePanel.SetActive(false);
+						flightControls.SetActive(false);
 
 						if (craftHead == null)
 						{
@@ -172,8 +184,7 @@ public class Builder : NetworkBehaviour
 				cam.target = null;
 				cam.BuildMode = false;
 				launchButton.SetActive(false);
-				abortButton.SetActive(false);
-				throttlePanel.SetActive(false);
+				flightControls.SetActive(false);
 				return;
 			}
 		}
@@ -355,8 +366,7 @@ public class Builder : NetworkBehaviour
 		tubeMask.SetActive(false);
 		cam.BuildMode = false;
 		launchButton.SetActive(false);
-		abortButton.SetActive(true);
-		throttlePanel.SetActive(true);
+		flightControls.SetActive(true);
 	}
 
 	public void DeleteCraft ()
