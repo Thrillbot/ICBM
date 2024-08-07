@@ -1,5 +1,4 @@
 using Mirror;
-using System.Collections;
 using UnityEngine;
 
 public class GameManager : NetworkBehaviour
@@ -9,8 +8,10 @@ public class GameManager : NetworkBehaviour
 
 	[SyncVar(hook = "SetSeed")]
 	private int perlinNoiseSeed;
+
 	[SyncVar(hook = "SetNoiseOffset")]
 	private Vector3 noiseOffset;
+	private static bool noiseSyncd = false;
 
 	private void Start()
 	{
@@ -18,19 +19,9 @@ public class GameManager : NetworkBehaviour
 		{
 			if (perlinNoiseSeed == 0)
 				perlinNoiseSeed = Random.Range(int.MinValue, int.MaxValue);
-			SetSeed(0, perlinNoiseSeed);
 			Random.InitState(perlinNoiseSeed);
 			noiseOffset = new Vector3(Random.Range(999, 99999), Random.Range(999, 99999), Random.Range(999, 99999));
-			SetNoiseOffset(Vector2.zero, noiseOffset);
 		}
-		//StartCoroutine(Initialize());
-	}
-
-	IEnumerator Initialize ()
-	{
-		yield return null;
-
-		FindObjectOfType<Worldificate>().generate = true;
 	}
 
 	void Update()
@@ -58,8 +49,9 @@ public class GameManager : NetworkBehaviour
 	void SetNoiseOffset(Vector3 oldValue, Vector3 newValue)
 	{
 		noiseOffset = newValue;
+		noiseSyncd = true;
 
-		FindObjectOfType<Worldificate>().generate = true;
+		FindObjectOfType<Worldificate>().GenerateWorld();
 	}
 
 	public float GameTime
@@ -70,5 +62,10 @@ public class GameManager : NetworkBehaviour
 	public Vector3 NoiseOffset
 	{
 		get { return noiseOffset; }
+	}
+
+	public static bool NoiseSyncd
+	{
+		get { return noiseSyncd; }
 	}
 }

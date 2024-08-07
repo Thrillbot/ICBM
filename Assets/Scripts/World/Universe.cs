@@ -14,7 +14,7 @@ public sealed class Universe
     public static Transform planetTransform;
     public static Dictionary<int, Vector3> equator;
 
-	public static float planetResolution = 2520;
+	public static float planetResolution = 2048;
 
 	public static float dayLengthInMinutes = 60;
 
@@ -24,7 +24,7 @@ public sealed class Universe
 	private static float gravity = 0.000000667f;
 	private static float seaLevel = 100f;
     private static float planetMass = 1499250374.81f;
-    private static float karmanLine = 25f;
+    private static float karmanLine = 40f;
 
 	private static Universe instance = null;
 

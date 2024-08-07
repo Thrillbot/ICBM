@@ -12,6 +12,7 @@ TagManager:
   - BeingBuilt
   - FreeCam
   - BeingBuild
+  - LoadingScreen
   layers:
   - Default
   - TransparentFX

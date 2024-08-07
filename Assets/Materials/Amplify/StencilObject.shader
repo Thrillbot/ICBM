@@ -8,7 +8,9 @@ Shader "StencilObject"
 		[HideInInspector] _EmissionColor("Emission Color", Color) = (1,1,1,1)
 		[ASEBegin]_Albedo("Albedo", 2D) = "white" {}
 		_Metallic("Metallic", 2D) = "white" {}
-		[ASEEnd]_Normal("Normal", 2D) = "white" {}
+		_Normal("Normal", 2D) = "white" {}
+		_Color("Color", Color) = (1,1,1,1)
+		[ASEEnd]_Emission("Emission", Color) = (0,0,0,1)
 		[HideInInspector] _texcoord( "", 2D ) = "white" {}
 
 
@@ -192,6 +194,7 @@ Shader "StencilObject"
 			#pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 			#pragma multi_compile_fog
 			#define ASE_FOG 1
+			#define _EMISSION
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 140008
 
@@ -277,8 +280,10 @@ Shader "StencilObject"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _Color;
 			float4 _Albedo_ST;
 			float4 _Normal_ST;
+			float4 _Emission;
 			float4 _Metallic_ST;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -554,9 +559,9 @@ Shader "StencilObject"
 				float2 uv_Metallic = IN.ase_texcoord8.xy * _Metallic_ST.xy + _Metallic_ST.zw;
 				
 
-				float3 BaseColor = tex2D( _Albedo, uv_Albedo ).rgb;
+				float3 BaseColor = ( _Color * tex2D( _Albedo, uv_Albedo ) ).rgb;
 				float3 Normal = UnpackNormalScale( tex2D( _Normal, uv_Normal ), 1.0 );
-				float3 Emission = 0;
+				float3 Emission = _Emission.rgb;
 				float3 Specular = 0.5;
 				float Metallic = tex2D( _Metallic, uv_Metallic ).r;
 				float Smoothness = 0.0;
@@ -811,6 +816,7 @@ Shader "StencilObject"
 			#pragma multi_compile_instancing
 			#pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 			#define ASE_FOG 1
+			#define _EMISSION
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 140008
 
@@ -857,8 +863,10 @@ Shader "StencilObject"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _Color;
 			float4 _Albedo_ST;
 			float4 _Normal_ST;
+			float4 _Emission;
 			float4 _Metallic_ST;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1119,6 +1127,7 @@ Shader "StencilObject"
 			#pragma multi_compile_instancing
 			#pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 			#define ASE_FOG 1
+			#define _EMISSION
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 140008
 
@@ -1163,8 +1172,10 @@ Shader "StencilObject"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _Color;
 			float4 _Albedo_ST;
 			float4 _Normal_ST;
+			float4 _Emission;
 			float4 _Metallic_ST;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1397,6 +1408,7 @@ Shader "StencilObject"
 
 			#define _NORMAL_DROPOFF_TS 1
 			#define ASE_FOG 1
+			#define _EMISSION
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 140008
 
@@ -1450,8 +1462,10 @@ Shader "StencilObject"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _Color;
 			float4 _Albedo_ST;
 			float4 _Normal_ST;
+			float4 _Emission;
 			float4 _Metallic_ST;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1660,8 +1674,8 @@ Shader "StencilObject"
 				float2 uv_Albedo = IN.ase_texcoord4.xy * _Albedo_ST.xy + _Albedo_ST.zw;
 				
 
-				float3 BaseColor = tex2D( _Albedo, uv_Albedo ).rgb;
-				float3 Emission = 0;
+				float3 BaseColor = ( _Color * tex2D( _Albedo, uv_Albedo ) ).rgb;
+				float3 Emission = _Emission.rgb;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
 
@@ -1699,6 +1713,7 @@ Shader "StencilObject"
 
 			#define _NORMAL_DROPOFF_TS 1
 			#define ASE_FOG 1
+			#define _EMISSION
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 140008
 
@@ -1742,8 +1757,10 @@ Shader "StencilObject"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _Color;
 			float4 _Albedo_ST;
 			float4 _Normal_ST;
+			float4 _Emission;
 			float4 _Metallic_ST;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1937,7 +1954,7 @@ Shader "StencilObject"
 				float2 uv_Albedo = IN.ase_texcoord2.xy * _Albedo_ST.xy + _Albedo_ST.zw;
 				
 
-				float3 BaseColor = tex2D( _Albedo, uv_Albedo ).rgb;
+				float3 BaseColor = ( _Color * tex2D( _Albedo, uv_Albedo ) ).rgb;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
 
@@ -1970,6 +1987,7 @@ Shader "StencilObject"
 			#pragma multi_compile_instancing
 			#pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 			#define ASE_FOG 1
+			#define _EMISSION
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 140008
 
@@ -2019,8 +2037,10 @@ Shader "StencilObject"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _Color;
 			float4 _Albedo_ST;
 			float4 _Normal_ST;
+			float4 _Emission;
 			float4 _Metallic_ST;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2311,6 +2331,7 @@ Shader "StencilObject"
 			#pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 			#pragma multi_compile_fog
 			#define ASE_FOG 1
+			#define _EMISSION
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 140008
 
@@ -2391,8 +2412,10 @@ Shader "StencilObject"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _Color;
 			float4 _Albedo_ST;
 			float4 _Normal_ST;
+			float4 _Emission;
 			float4 _Metallic_ST;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2658,9 +2681,9 @@ Shader "StencilObject"
 				float2 uv_Metallic = IN.ase_texcoord8.xy * _Metallic_ST.xy + _Metallic_ST.zw;
 				
 
-				float3 BaseColor = tex2D( _Albedo, uv_Albedo ).rgb;
+				float3 BaseColor = ( _Color * tex2D( _Albedo, uv_Albedo ) ).rgb;
 				float3 Normal = UnpackNormalScale( tex2D( _Normal, uv_Normal ), 1.0 );
-				float3 Emission = 0;
+				float3 Emission = _Emission.rgb;
 				float3 Specular = 0.5;
 				float Metallic = tex2D( _Metallic, uv_Metallic ).r;
 				float Smoothness = 0.0;
@@ -2781,6 +2804,7 @@ Shader "StencilObject"
 
 			#define _NORMAL_DROPOFF_TS 1
 			#define ASE_FOG 1
+			#define _EMISSION
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 140008
 
@@ -2822,8 +2846,10 @@ Shader "StencilObject"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _Color;
 			float4 _Albedo_ST;
 			float4 _Normal_ST;
+			float4 _Emission;
 			float4 _Metallic_ST;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3028,6 +3054,7 @@ Shader "StencilObject"
 
 			#define _NORMAL_DROPOFF_TS 1
 			#define ASE_FOG 1
+			#define _EMISSION
 			#define _NORMALMAP 1
 			#define ASE_SRP_VERSION 140008
 
@@ -3069,8 +3096,10 @@ Shader "StencilObject"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _Color;
 			float4 _Albedo_ST;
 			float4 _Normal_ST;
+			float4 _Emission;
 			float4 _Metallic_ST;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3290,13 +3319,19 @@ Node;AmplifyShaderEditor.TexturePropertyNode;22;-1504,384;Inherit;True;Property;
 Node;AmplifyShaderEditor.SamplerNode;23;-1152,0;Inherit;True;Property;_TextureSample0;Texture Sample 0;3;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SamplerNode;24;-1152,176;Inherit;True;Property;_TextureSample1;Texture Sample 0;3;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SamplerNode;25;-1152,352;Inherit;True;Property;_TextureSample2;Texture Sample 0;3;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-WireConnection;1;0;23;0
+Node;AmplifyShaderEditor.SimpleMultiplyOpNode;26;-736,-32;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;1;COLOR;0
+Node;AmplifyShaderEditor.ColorNode;27;-1072,-176;Inherit;False;Property;_Color;Color;3;0;Create;True;0;0;0;False;0;False;1,1,1,1;0,0,0,0;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.ColorNode;28;-1071,544;Inherit;False;Property;_Emission;Emission;4;0;Create;True;0;0;0;False;0;False;0,0,0,1;0,0,0,0;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+WireConnection;1;0;26;0
 WireConnection;1;1;13;0
+WireConnection;1;2;28;0
 WireConnection;1;3;24;1
 WireConnection;1;4;14;0
 WireConnection;13;0;25;0
 WireConnection;23;0;20;0
 WireConnection;24;0;21;0
 WireConnection;25;0;22;0
+WireConnection;26;0;27;0
+WireConnection;26;1;23;0
 ASEEND*/
-//CHKSM=23FAD258C342EA360839B1913D4E91E34FCBC64A
+//CHKSM=ACDA97826D252DB26FAFE15846F974E675A161DE

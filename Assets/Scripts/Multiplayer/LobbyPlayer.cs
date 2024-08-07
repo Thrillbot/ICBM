@@ -53,6 +53,5 @@ public class LobbyPlayer : NetworkBehaviour
 			playerIcon.Apply();
 			playerIconImage.texture = playerIcon;
 		}
-		
 	}
 }

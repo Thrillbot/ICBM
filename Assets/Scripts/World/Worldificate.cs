@@ -14,12 +14,8 @@ public class Worldificate : MonoBehaviour
 		public AnimationCurve heightCurve;
 	}
 
-	public GameObject chunkPrefab;
-	public int chunkCount = 840;
-	public static List<GameObject> chunkList;
+	public GameObject planetObject;
 
-	//public GameObject[] chunks;
-	//public GameObject[] innerBits;
 	public PerlinLevel[] perlinLevels;
 	public float globalBiomeScale = 25;
 	public float maxHeight = 10;
@@ -32,38 +28,21 @@ public class Worldificate : MonoBehaviour
 	private Vector3 vertexWorldPos;
 	private Vector3 noiseOffset;
 
+	private bool worldGenerated = false;
+
 	private void Start()
 	{
 		Planet = gameObject;
-
-		chunkList = new();
-		GameObject tempGo;
-		for (int i = 0;  i < chunkCount; i++)
-		{
-			tempGo = Instantiate(chunkPrefab, transform);
-			tempGo.transform.localEulerAngles = Vector3.forward * ((float)i / chunkCount) * 360f + Vector3.right * 90;
-			tempGo.layer = gameObject.layer;
-			foreach (Transform t in tempGo.transform)
-			{
-				t.gameObject.layer = gameObject.layer;
-			}
-			chunkList.Add(tempGo);
-		}
 	}
 
 	private void Update()
 	{
 		if (generate)
 		{
-			if (noiseOffset ==  Vector3.zero)
-			{
-				if (FindObjectOfType<GameManager>())
-					noiseOffset = FindObjectOfType<GameManager>().NoiseOffset;
-				else
-					noiseOffset = Vector3.one * Random.Range(-9999,9999);
-				Debug.Log("Noise Offset is " + noiseOffset);
-				return;
-			}
+			if (fakePlanet)
+				noiseOffset = Vector3.one * Random.Range(-9999,9999);
+			else
+				noiseOffset = FindObjectOfType<GameManager>().NoiseOffset;
 
 			SetLoading(false, true);
 			if (!fakePlanet)
@@ -73,11 +52,9 @@ public class Worldificate : MonoBehaviour
 			}
 			planetResolution = 360f / planetResolution;
 
-			for (int i = 0; i < chunkList.Count; i++)
-			{
-				GenerateChunk(chunkList[i].transform.GetChild(0).gameObject);
-				GenerateChunk(chunkList[i].transform.GetChild(1).gameObject);
-			}
+			GenerateChunk(planetObject.transform.GetChild(0).gameObject);
+			GenerateChunk(planetObject.transform.GetChild(1).gameObject);
+
 			planetTransform = transform.parent;
 
 			generate = false;
@@ -87,13 +64,35 @@ public class Worldificate : MonoBehaviour
 		SetPaused(!pauseUniverse, pauseUniverse);
 	}
 
+	public void GenerateWorld ()
+	{
+		if (worldGenerated) return;
+		worldGenerated = true;
+		fakePlanet = false;
+
+		if (FindObjectOfType<GameManager>())
+			noiseOffset = FindObjectOfType<GameManager>().NoiseOffset;
+
+		SetLoading(false, true);
+		equator = new Dictionary<int, Vector3>();
+		planetResolution = 360f / planetResolution;
+
+		GenerateChunk(planetObject.transform.GetChild(0).gameObject);
+		GenerateChunk(planetObject.transform.GetChild(1).gameObject);
+
+		planetTransform = transform.parent;
+
+		generate = false;
+		SetLoading(true, false);
+	}
+
 	private void GenerateChunk (GameObject chunk)
 	{
 		float angle;
 		Vector3[] vertices = chunk.GetComponent<MeshFilter>().mesh.vertices;
 		for (int i = 0; i < vertices.Length; i++)
 		{
-			float xValue = vertices[i].x;
+			float yValue = vertices[i].y;
 			vertexWorldPos = chunk.transform.TransformPoint(vertices[i]);
 			workerVec = vertexWorldPos.normalized;
 
@@ -102,8 +101,8 @@ public class Worldificate : MonoBehaviour
 				workerVec += vertexWorldPos.normalized * Mathf.Pow(p.heightCurve.Evaluate(Perlin.Noise(vertexWorldPos.x * p.scale + p.seed + noiseOffset.x, vertexWorldPos.y * p.scale + p.seed + noiseOffset.y, vertexWorldPos.z * p.scale + p.seed + noiseOffset.z)), p.exponent) * p.height;
 				workerVec -= vertexWorldPos.normalized;
 			}
-			vertices[i] += chunk.transform.InverseTransformPoint(workerVec * Perlin.Noise(vertexWorldPos.x * globalBiomeScale + noiseOffset.x, vertexWorldPos.y * globalBiomeScale + noiseOffset.y, vertexWorldPos.z * globalBiomeScale + noiseOffset.z)) * yValueCurve.Evaluate(vertices[i].normalized.x);
-			vertices[i].x = xValue;
+			vertices[i] += chunk.transform.InverseTransformPoint(workerVec * Perlin.Noise(vertexWorldPos.x * globalBiomeScale + noiseOffset.x, vertexWorldPos.y * globalBiomeScale + noiseOffset.y, vertexWorldPos.z * globalBiomeScale + noiseOffset.z)) * yValueCurve.Evaluate(vertices[i].normalized.y);
+			vertices[i].y = yValue;
 			if (Mathf.Abs(chunk.transform.TransformPoint(vertices[i]).z) < 0.2f)
 			{
 				angle = Vector3.SignedAngle(Vector3.up, chunk.transform.TransformPoint(vertices[i]).normalized, Vector3.forward);

@@ -102,6 +102,9 @@ public class Thruster : Part
 	public void SetThrottle (float oldValue, float newValue)
 	{
 		if (dead || gameObject == null || smoke == null || thrusterAudio == null) return;
+
+		if (thrusterAudio.enabled == false) return;
+
 		if (fuelCheck)
 		{
 			ParticleSystem.MainModule temp = smoke.main;

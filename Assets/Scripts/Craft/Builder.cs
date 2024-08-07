@@ -60,7 +60,7 @@ public class Builder : NetworkBehaviour
 	{
 		if (!isOwned)
 		{
-			Debug.Log("Not Local Player");
+			//Debug.Log("Not Local Player");
 			return;
 		}
 
@@ -71,7 +71,7 @@ public class Builder : NetworkBehaviour
 
 		if (player == null)
 		{
-			Debug.Log("No Rewired Player Found");
+			//Debug.Log("No Rewired Player Found");
 			return;
 		}
 
@@ -289,8 +289,8 @@ public class Builder : NetworkBehaviour
 	{
 		if (hit.parent.GetComponent<Part>() == null)
 		{
-			Debug.Log(hit.name);
-			Debug.Log("Attachment Point doesn't belong to a part!");
+			//Debug.Log(hit.name);
+			//Debug.Log("Attachment Point doesn't belong to a part!");
 			return Vector3.zero;
 		}
 
@@ -305,7 +305,7 @@ public class Builder : NetworkBehaviour
 		{
 			offset = Vector3.forward * (part.dimensions.y / 2f) * Mathf.Sign(direction.z);
 		}
-		Debug.Log("Offset: " + offset);
+		//Debug.Log("Offset: " + offset);
 		return offset;
 	}
 

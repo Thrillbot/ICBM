@@ -1,5 +1,6 @@
 using Mirror;
 using Rewired;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -12,7 +13,6 @@ public class BaseSpawner : NetworkBehaviour
 	public float health = 100;
 	public Image healthbar;
 
-	public Transform[] pieSlices;
 	public int playerId = 0;
 
 	[SyncVar(hook = "SetName")]
@@ -35,39 +35,53 @@ public class BaseSpawner : NetworkBehaviour
 	private TMP_Text debugText;
 	private List<Explosion> explosions;
 
+	private Vector2 zoneAngles;
+	private float workerFloat;
+
+	public struct InitArgs
+	{
+		public int playerIndex;
+		public Color playerColor;
+	}
+
 	void Awake()
 	{
-		// Get the Rewired Player object for this player and keep it for the duration of the character's lifetime
 		player = ReInput.players.GetPlayer(playerId);
+
+		transform.parent = Planet.transform;
 	}
 
 	public bool Visible
 	{
 		get { return visible; }
-		set { visible = value; SetVisible(!value, value); }
+		set { visible = value; }
 	}
 
-	public void Initialize(int playerIndex)
+	public void Initialize(InitArgs args)
 	{
-		InitializeRpc(playerIndex);
+		InitializeRpc(args.playerIndex, args.playerColor, NetworkServer.connections.Count);
 	}
 
 	[ClientRpc]
-	public void InitializeRpc(int playerIndex)
+	public void InitializeRpc(int playerIndex, Color playerColor, int connCount)
 	{
+		StartCoroutine(InitializeCoroutine(playerIndex, playerColor, connCount));
+	}
+
+	IEnumerator InitializeCoroutine (int playerIndex, Color playerColor, int connCount)
+	{
+		while (!GameManager.NoiseSyncd) yield return null;
+
+		Planet.GetComponent<Worldificate>().GenerateWorld();
+
+		zoneAngles = new Vector2(360f / (float)connCount * (float)playerIndex, 360f / (float)connCount * (float)(playerIndex + 1));
+
 		if (isLocalPlayer)
 		{
-			pieSlices = new Transform[840 / NetworkServer.connections.Count];
-			int index = 0;
-			for (int i = 840 / NetworkServer.connections.Count * playerIndex; i < 840 / (NetworkServer.connections.Count * playerIndex + 1); i++)
-			{
-				pieSlices[index] = Worldificate.chunkList[i].transform;
-				index++;
-			}
-
 			if (debugText == null)
 			{
-				foreach (TMP_Text t in FindObjectsOfType<TMP_Text>()) {
+				foreach (TMP_Text t in FindObjectsOfType<TMP_Text>())
+				{
 					if (t.name.Contains("Debug"))
 					{
 						debugText = t;
@@ -77,24 +91,21 @@ public class BaseSpawner : NetworkBehaviour
 			}
 
 			Transform cam = FindObjectOfType<FreeCam>().transform;
-			cam.LookAt(pieSlices[pieSlices.Length/2].forward);
-			cam.localEulerAngles = new Vector3(0, cam.localEulerAngles.y - 22.5f, 0);
+
+			cam.LookAt(Quaternion.Euler(0, 0, (zoneAngles.y - zoneAngles.x) / 2 + zoneAngles.x) * Vector3.up);
+			cam.localEulerAngles = new Vector3(0, cam.localEulerAngles.y, 0);
 
 			transform.parent = Planet.transform;
-			SetInitialized(false, true);
+			initialized = true;
+
+			GameObject.FindWithTag("LoadingScreen").SetActive(false);
 		}
 	}
 
 	public void ApplyDamage (float damage)
 	{
-		Debug.Log("Damaging by " + damage + " of total " + health);
 		health -= damage;
-		SetHealth(100, health);
-		if (health <= 0)
-		{
-			Debug.Log("Killing Base");
-			BaseDeath();
-		}
+		if (health <= 0) BaseDeath();
 	}
 
 	[Command]
@@ -121,7 +132,6 @@ public class BaseSpawner : NetworkBehaviour
 	public void SetName(string oldValue, string newValue)
 	{
 		playerName = newValue;
-		Debug.Log("Setting Player Name Tag: " + playerName);
 		nameTag.text = playerName;
 	}
 
@@ -129,6 +139,12 @@ public class BaseSpawner : NetworkBehaviour
 	{
 		playerIcon = newValue;
 		playerFlag.texture = newValue;
+	}
+
+	void SetHealth(float oldvalue, float newValue)
+	{
+		health = newValue;
+		healthbar.fillAmount = health / 100f;
 	}
 
 	public void FocusBase ()
@@ -142,17 +158,8 @@ public class BaseSpawner : NetworkBehaviour
 			GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>().target.GetComponent<Part>().Abort();
 	}
 
-	void SetHealth (float oldvalue, float newValue)
-	{
-		health = newValue;
-		healthbar.fillAmount = health / 100f;
-	}
-
 	private void Update()
 	{
-		//if (isLocalPlayer)
-		//	debugText.text = "Initialized = " + initialized;
-
 		if (!isLocalPlayer || !initialized)
 			return;
 
@@ -166,7 +173,6 @@ public class BaseSpawner : NetworkBehaviour
 
 				if ((e.transform.position - transform.position).sqrMagnitude <= e.explosionRadius * e.explosionRadius)
 				{
-					Debug.Log("Applying Damage");
 					ApplyDamage(e.explosionDamage);
 				}
 			}
@@ -191,41 +197,35 @@ public class BaseSpawner : NetworkBehaviour
 
 			workerVec = GetPointOnPlanet(GetMousePointOnPlane());
 
-			Visible = false;
+			workerFloat = Vector3.SignedAngle(workerVec.normalized, Vector3.up, Vector3.forward);
+			if (workerFloat < 0) workerFloat += 360f;
 
-			foreach (Transform t in pieSlices)
+			visible = false;
+			if (workerFloat > zoneAngles.x && workerFloat < zoneAngles.y)
 			{
-				if (Vector3.SignedAngle(workerVec.normalized, t.GetChild(0).forward, Vector3.forward) > 0 && Vector3.SignedAngle(workerVec.normalized, t.GetChild(0).forward, Vector3.forward) < 1)
-				{
-					Visible = true;
-					break;
-				}
+				visible = true;
 			}
 
 			foreach (MeshRenderer m in GetComponentsInChildren<MeshRenderer>())
 			{
-				m.enabled = Visible;
+				m.enabled = visible;
 			}
 
-			if (Visible && player.GetButtonUp("Interact"))
+			if (visible && player.GetButtonUp("Interact"))
 			{
 				debugText.text = "";
 				placed = true;
-				SetPlaced(false, true);
 			}
 		}
 	}
 
 	public void FixedUpdate()
 	{
-		//if (!isLocalPlayer)
-		//	return;
-
 		if (!placed)
 		{
 			foreach (MeshRenderer m in GetComponentsInChildren<MeshRenderer>())
 			{
-				m.enabled = Visible;
+				m.enabled = visible;
 			}
 		}
 		else

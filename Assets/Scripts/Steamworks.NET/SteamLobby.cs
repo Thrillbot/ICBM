@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Mirror;
 using Steamworks;
-using TMPro;
 using System.Collections.Generic;
 using System.Collections;
 
@@ -140,11 +139,11 @@ public class SteamLobby : MonoBehaviour
 
 	public void AddNameToList (string name)
 	{
-		Debug.Log("Adding Player To List");
+		//Debug.Log("Adding Player To List");
 		playerList ??= new();
 
 		if (playerList.Contains(name)) return;
-		Debug.Log("Confirmed, Unique Player");
+		//Debug.Log("Confirmed, Unique Player");
 		playerList.Add(name);
 
 		/*
