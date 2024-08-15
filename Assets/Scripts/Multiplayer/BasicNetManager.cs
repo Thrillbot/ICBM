@@ -7,10 +7,14 @@ using System.Collections;
 public class BasicNetManager : NetworkManager
 {
 	[Header("Bespoke Stuff")]
-	public string worldSceneName;
-	public GameObject basePrefab;
-	public PlayerSeat[] playerSeatPositions;
-	public List<Color> playerColors;
+	[SerializeField]
+	private string worldSceneName;
+	[SerializeField]
+	private GameObject basePrefab;
+	[SerializeField]
+	private PlayerSeat[] playerSeatPositions;
+	[SerializeField]
+	private List<Color> playerColors;
 
 	List<LobbyPlayer> players;
 	List<PlayerConn> playerConns;
@@ -229,21 +233,12 @@ public class BasicNetManager : NetworkManager
 			NetworkServer.Spawn(player, conn);
 
 			player.name = "Base - " + playerName;
-			player.GetComponent<BaseSpawner>().playerName = playerName;
-			player.GetComponent<BaseSpawner>().playerIcon = playerIcon;
+			player.GetComponent<Base>().playerName = playerName;
+			player.GetComponent<Base>().playerIcon = playerIcon;
 
-			// instantiating a "Player" prefab gives it the name "Player(clone)"
-			// => appending the connectionId is WAY more useful for debugging!
-
-			//Debug.Log("Initializing Player: " + conn.connectionId);
-			//while (!conn.isReady)
-			//{
-			//	yield return null;
-			//}
 			NetworkServer.AddPlayerForConnection(conn, player);
-			//player.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
 
-			player.SendMessage("Initialize", new BaseSpawner.InitArgs { playerIndex = playerIndex, playerColor = playerColor });
+			player.SendMessage("Initialize", new Base.InitArgs { playerIndex = playerIndex, playerColor = playerColor });
 		}
 	}
 

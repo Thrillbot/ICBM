@@ -7,20 +7,27 @@ using UnityEngine;
 using UnityEngine.UI;
 using static Universe;
 
-public class BaseSpawner : NetworkBehaviour
+public class Base : NetworkBehaviour
 {
 	[SyncVar(hook = "SetHealth")]
-	public float health = 100;
-	public Image healthbar;
+	[SerializeField]
+	private float health = 100;
+	[SerializeField]
+	private Image healthbar;
 
-	public int playerId = 0;
+	[SerializeField]
+	private int playerId = 0;
 
 	[SyncVar(hook = "SetName")]
 	public string playerName;
-	public TMP_Text nameTag;
+	[SerializeField]
+	private TMP_Text nameTag;
 	[SyncVar(hook = "SetPlayerIcon")]
 	public Texture2D playerIcon;
-	public RawImage playerFlag;
+	[SerializeField]
+	private RawImage playerFlag;
+	[SerializeField]
+	private GameObject destroyedBasePrefab;
 
 	private Vector3 workerVec;
 	private Player player;
@@ -111,7 +118,13 @@ public class BaseSpawner : NetworkBehaviour
 	[Command]
 	void BaseDeath ()
 	{
-		NetworkServer.Destroy(gameObject);
+		GameObject tempGo = Instantiate(destroyedBasePrefab);
+		tempGo.transform.parent = GetComponentInChildren<Builder>().transform.parent;
+		tempGo.transform.position = GetComponentInChildren<Builder>().transform.position;
+		tempGo.transform.rotation = GetComponentInChildren<Builder>().transform.rotation;
+		Destroy(GetComponentInChildren<Builder>().gameObject);
+		nameTag.color = Color.red;
+
 	}
 
 	void SetVisible(bool oldValue, bool newValue)
@@ -235,5 +248,54 @@ public class BaseSpawner : NetworkBehaviour
 				m.enabled = true;
 			}
 		}
+	}
+
+	public override void OnStartAuthority()
+	{
+		base.OnStartAuthority();
+		GetComponentInChildren<Builder>().controlButtons.SetActive(true);
+	}
+
+	[Command(requiresAuthority = false)]
+	public void DestroyPart(GameObject part, bool armed, Vector3 pos, float explosionRadius, float explosionDamage, int explosionIndex)
+	{
+		if (part != null)
+		{
+			if (armed)
+			{
+				GameObject explosionGO = Instantiate(GetComponentInChildren<Builder>().explosions[explosionIndex], pos, Quaternion.identity);
+				NetworkServer.Spawn(explosionGO);
+			}
+
+			NetworkServer.Destroy(part);
+		}
+	}
+
+	[Command(requiresAuthority = false)]
+	public void Stage(GameObject part)
+	{
+		if (part != null)
+			NetworkServer.Destroy(part.gameObject);
+	}
+
+	[Command(requiresAuthority = false)]
+	public void CmdSpawnPart(int index, NetworkIdentity identity)
+	{
+		GameObject newPart;
+		if (index == -1)
+			newPart = Instantiate(GetComponentInChildren<Builder>().craftHeadPrefab);
+		else
+			newPart = Instantiate(GetComponentInChildren<Builder>().parts[index]);
+
+		NetworkServer.Spawn(newPart, identity.connectionToClient);
+
+		newPart.GetComponent<NetworkIdentity>().AssignClientAuthority(identity.connectionToClient);
+	}
+
+	[Command(requiresAuthority = false)]
+	public void CmdDestroyPart(NetworkIdentity netID)
+	{
+		if (netID != null)
+			NetworkServer.Destroy(netID.gameObject);
 	}
 }

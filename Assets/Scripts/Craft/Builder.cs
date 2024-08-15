@@ -6,28 +6,40 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Builder : NetworkBehaviour
+public class Builder : MonoBehaviour
 {
-	public TMP_Text feedbackText;
-	public bool active;
-	public BoxCollider buildVolume;
-	public Transform launchPad;
-	public LayerMask uiLayers;
-	public GameObject tubeMask;
-	public GameObject launchButton;
-	public GameObject flightControls;
-	public Image throttleVisual;
-	public Image fuelVisual;
+	[SerializeField]
+	private TMP_Text feedbackText;
+	[SerializeField]
+	private bool active;
+	[SerializeField]
+	private BoxCollider buildVolume;
+	[SerializeField]
+	private Transform launchPad;
+	[SerializeField]
+	private LayerMask uiLayers;
+	[SerializeField]
+	private GameObject tubeMask;
+	[SerializeField]
+	private GameObject launchButton;
+	[SerializeField]
+	private GameObject flightControls;
+	[SerializeField]
+	private Image throttleVisual;
+	[SerializeField]
+	private Image fuelVisual;
 	public GameObject controlButtons;
 
-	public Material ghostMaterial;
+	[SerializeField]
+	private Material ghostMaterial;
 	public GameObject craftHeadPrefab;
 	public GameObject[] parts;
 	public GameObject[] explosions;
 
 	public Collider currentHitCollider;
 
-	public bool debugMode;
+	[SerializeField]
+	private bool debugMode;
 
 	public GameObject craftHead;
 	private List<GameObject> craft;  // To Do: Make this list a thing
@@ -41,24 +53,29 @@ public class Builder : NetworkBehaviour
 	private int playerId = 0;
 	private Player player;
 
-	public float throttle;
+	private float throttle;
 	private float throttleRampTime = 0.5f;
 	private float fuelLevel = 0;
 	private float maxFuel = 0;
 
+	private Base mainBase;
+
 	void Awake()
 	{
+		mainBase = transform.parent.GetComponent<Base>();
+
 		cam = GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>();
 
 		SpawnGhostPart();
 
 		// Get the Rewired Player object for this player and keep it for the duration of the character's lifetime
 		player = ReInput.players.GetPlayer(playerId);
+
 	}
 
 	void LateUpdate()
 	{
-		if (!isOwned)
+		if (transform.parent == null || !transform.parent.GetComponent<NetworkBehaviour>().isOwned)
 		{
 			//Debug.Log("Not Local Player");
 			return;
@@ -136,7 +153,7 @@ public class Builder : NetworkBehaviour
 
 						if (craftHead == null)
 						{
-							CmdSpawnPart(-1, netIdentity);
+							mainBase.CmdSpawnPart(-1, transform.parent.GetComponent<NetworkBehaviour>().netIdentity);
 						}
 
 						return;
@@ -158,7 +175,7 @@ public class Builder : NetworkBehaviour
 						if (player.GetButtonUp("Interact"))
 						{
 							currentHitCollider = h.collider;
-							CmdSpawnPart(partIndex, netIdentity);
+							mainBase.CmdSpawnPart(partIndex, transform.parent.GetComponent<NetworkBehaviour>().netIdentity);
 							h.collider.enabled = false;
 						}
 					}
@@ -170,7 +187,7 @@ public class Builder : NetworkBehaviour
 
 					h.collider.transform.parent.gameObject.GetComponent<Part>().attachedCollider.enabled = true;
 
-					CmdDestroyPart(h.collider.transform.parent.gameObject.GetComponent<NetworkIdentity>());
+					mainBase.CmdDestroyPart(h.collider.transform.parent.gameObject.GetComponent<NetworkIdentity>());
 				}
 			}
 		}
@@ -211,7 +228,7 @@ public class Builder : NetworkBehaviour
 		{
 			if (newPart.GetComponent<ControlModule>())
 			{
-				newPart.transform.parent = transform;
+				newPart.transform.parent = transform.parent;
 				newPart.transform.localEulerAngles = Vector3.zero;
 				newPart.transform.localScale = Vector3.one * 10f;
 				newPart.transform.localPosition = new Vector3(0, 0, -1.5f);
@@ -240,49 +257,6 @@ public class Builder : NetworkBehaviour
 		{
 			Debug.LogError(e);
 		}
-	}
-
-	[Command(requiresAuthority = false)]
-	public void DestroyPart(GameObject part, bool armed, Vector3 pos, float explosionRadius, float explosionDamage, int explosionIndex)
-	{
-		if (part != null)
-		{
-			if (armed)
-			{
-				GameObject explosionGO = Instantiate(explosions[explosionIndex], pos, Quaternion.identity);
-				NetworkServer.Spawn(explosionGO);
-			}
-
-			NetworkServer.Destroy(part);
-		}
-	}
-
-	[Command(requiresAuthority = false)]
-	public void Stage(GameObject part)
-	{
-		if (part != null)
-			NetworkServer.Destroy(part.gameObject);
-	}
-
-	[Command(requiresAuthority = false)]
-	void CmdSpawnPart (int index, NetworkIdentity identity)
-	{
-		GameObject newPart;
-		if (index == -1)
-			newPart = Instantiate(craftHeadPrefab);
-		else
-			newPart = Instantiate(parts[index]);
-
-		NetworkServer.Spawn(newPart, identity.connectionToClient);
-
-		newPart.GetComponent<NetworkIdentity>().AssignClientAuthority(identity.connectionToClient);
-	}
-
-	[Command(requiresAuthority = false)]
-	void CmdDestroyPart (NetworkIdentity netID)
-	{
-		if (netID != null)
-			NetworkServer.Destroy(netID.gameObject);
 	}
 
 	Vector3 FindPartOffset(Vector3 direction, Part part, Transform hit)
@@ -384,11 +358,5 @@ public class Builder : NetworkBehaviour
 	public float Throttle
 	{
 		get { return throttle; }
-	}
-
-	public override void OnStartAuthority()
-	{
-		base.OnStartAuthority();
-		controlButtons.SetActive(true);
 	}
 }

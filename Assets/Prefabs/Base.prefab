@@ -1176,7 +1176,6 @@ GameObject:
   - component: {fileID: 3412437687851424677}
   - component: {fileID: -454093618506226784}
   - component: {fileID: 1764824634607939944}
-  - component: {fileID: 7106783314296626890}
   m_Layer: 0
   m_Name: Base
   m_TagString: Untagged
@@ -1376,54 +1375,12 @@ MonoBehaviour:
   syncInterval: 0
   health: 100
   healthbar: {fileID: 4039652007570132174}
-  pieSlice: {fileID: 0}
   playerId: 0
   playerName: 
   nameTag: {fileID: 675802517363802171}
   playerIcon: {fileID: 0}
   playerFlag: {fileID: 6599803812721333099}
---- !u!114 &7106783314296626890
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2978973621751969622}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b29359f1ae5bc294c94838c6e006add0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  syncDirection: 0
-  syncMode: 0
-  syncInterval: 0
-  feedbackText: {fileID: 5715284361291280726}
-  active: 0
-  buildVolume: {fileID: 3088786188257222315}
-  launchPad: {fileID: 4393056098740297504}
-  uiLayers:
-    serializedVersion: 2
-    m_Bits: 32
-  tubeMask: {fileID: 2215048145275945943}
-  launchButton: {fileID: 4040499336840204425}
-  flightControls: {fileID: 2220755376682801473}
-  throttleVisual: {fileID: 8201617653943592883}
-  fuelVisual: {fileID: 8950738764227169510}
-  controlButtons: {fileID: 8683575289231307353}
-  ghostMaterial: {fileID: 2100000, guid: 71a3e8d089cd71943a5e5d802171227c, type: 2}
-  craftHeadPrefab: {fileID: 8436534409951991007, guid: b659d4d30a1941c448561c677cfa731f, type: 3}
-  parts:
-  - {fileID: 3699589258274647300, guid: 2895aae482d8ed24e8ac16522cc0d867, type: 3}
-  - {fileID: 7114947877877589527, guid: 450e86172ce78bf45a6d54212f59dcd5, type: 3}
-  - {fileID: 3699589258274647300, guid: 08ec5cc02261d9e40a5e57bfe718d373, type: 3}
-  explosions:
-  - {fileID: 582297097327008511, guid: 3a9723338d9e4ba4a859edb4b0366c85, type: 3}
-  - {fileID: 582297097327008511, guid: 2baeafaad882fed409ae4ed27a1fd19e, type: 3}
-  currentHitCollider: {fileID: 0}
-  debugMode: 0
-  craftHead: {fileID: 0}
-  ghostPart: {fileID: 0}
-  throttle: 0
+  destroyedBasePrefab: {fileID: 2978973621751969622, guid: 5f8ef1c38febb68488a05b1befa59cde, type: 3}
 --- !u!1 &3864061062737706967
 GameObject:
   m_ObjectHideFlags: 0
@@ -1463,7 +1420,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.92477167, y: 0.11170762}
   m_AnchorMax: {x: 0.96300006, y: 0.43248126}
-  m_AnchoredPosition: {x: 0, y: -0.00000035762787}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0.0000071525574, y: -0.00000071525574}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6701166726732367725
@@ -1711,7 +1668,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7106783314296626890}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Builder, Assembly-CSharp
         m_MethodName: Launch
         m_Mode: 1
@@ -3772,7 +3729,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7012573492942425442, guid: e276c9f34bfe63f468a60a63edeb524c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1820396344915281884}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e276c9f34bfe63f468a60a63edeb524c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6522358786462544066}
   m_SourcePrefab: {fileID: 100100000, guid: e276c9f34bfe63f468a60a63edeb524c, type: 3}
 --- !u!4 &2333114060916423879 stripped
 Transform:
@@ -3784,3 +3744,50 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e276c9f34bfe63f468a60a63edeb524c, type: 3}
   m_PrefabInstance: {fileID: 4697615672006619557}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5616025300154322164 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e276c9f34bfe63f468a60a63edeb524c, type: 3}
+  m_PrefabInstance: {fileID: 4697615672006619557}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6522358786462544066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5616025300154322164}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b29359f1ae5bc294c94838c6e006add0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  feedbackText: {fileID: 5715284361291280726}
+  active: 0
+  buildVolume: {fileID: 3088786188257222315}
+  launchPad: {fileID: 4393056098740297504}
+  uiLayers:
+    serializedVersion: 2
+    m_Bits: 32
+  tubeMask: {fileID: 2215048145275945943}
+  launchButton: {fileID: 4040499336840204425}
+  flightControls: {fileID: 2220755376682801473}
+  throttleVisual: {fileID: 8201617653943592883}
+  fuelVisual: {fileID: 8950738764227169510}
+  controlButtons: {fileID: 8683575289231307353}
+  ghostMaterial: {fileID: 2100000, guid: 71a3e8d089cd71943a5e5d802171227c, type: 2}
+  craftHeadPrefab: {fileID: 8436534409951991007, guid: b659d4d30a1941c448561c677cfa731f, type: 3}
+  parts:
+  - {fileID: 3699589258274647300, guid: 2895aae482d8ed24e8ac16522cc0d867, type: 3}
+  - {fileID: 7114947877877589527, guid: 450e86172ce78bf45a6d54212f59dcd5, type: 3}
+  - {fileID: 3699589258274647300, guid: 08ec5cc02261d9e40a5e57bfe718d373, type: 3}
+  explosions:
+  - {fileID: 582297097327008511, guid: 3a9723338d9e4ba4a859edb4b0366c85, type: 3}
+  - {fileID: 582297097327008511, guid: 2baeafaad882fed409ae4ed27a1fd19e, type: 3}
+  currentHitCollider: {fileID: 0}
+  debugMode: 0
+  craftHead: {fileID: 0}
+  ghostPart: {fileID: 0}
+  throttle: 0

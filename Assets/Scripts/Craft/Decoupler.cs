@@ -39,6 +39,6 @@ public class Decoupler : Part
 		childRigidbody.angularVelocity = transform.root.GetComponent<Rigidbody>().angularVelocity;
 		childRigidbody.AddForce(-transform.forward * decoupleForce);
 
-		builder.Stage(gameObject);
+		mainBase.Stage(gameObject);
 	}
 }

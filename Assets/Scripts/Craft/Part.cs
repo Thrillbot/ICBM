@@ -6,23 +6,36 @@ using UnityEngine;
 public class Part : NetworkBehaviour
 {
 	[Header("Part")]
-	public float mass;
+	[SerializeField]
+	protected float mass;
 	[Range(0,1)]
-	public float drag;
+	[SerializeField]
+	protected float drag;
 	public Vector2 dimensions;
 
 	[Header("Projection")]
-	public LineRenderer lineRenderer;
-	public LineRenderer mapLineRenderer;
-	public int numPoints = 50; // Number of points to display in the line renderer
-	public float timeStep = 0.1f; // Time step for each point in the simulation
-	public LayerMask collisionMask; // Layer mask to check for collisions
+	[SerializeField]
+	protected LineRenderer lineRenderer;
+	[SerializeField]
+	protected LineRenderer mapLineRenderer;
+	[SerializeField]
+	protected int numPoints = 50; // Number of points to display in the line renderer
+	[SerializeField]
+	protected float timeStep = 0.1f; // Time step for each point in the simulation
+	[SerializeField]
+	protected LayerMask collisionMask; // Layer mask to check for collisions
 
 	[Header("Other")]
-	public GameObject explosion;
-	public float explosionRadius;
-	public float explosionDamage;
-	public Builder builder;
+	[SerializeField]
+	protected GameObject explosion;
+	[SerializeField]
+	protected float explosionRadius;
+	[SerializeField]
+	protected float explosionDamage;
+	[SerializeField]
+	protected Builder builder;
+	[SerializeField]
+	protected Base mainBase;
 
 	public Rigidbody rootRigidbody;
 	public Collider attachedCollider;
@@ -63,7 +76,7 @@ public class Part : NetworkBehaviour
 			return;
 		}
 
-		if (transform.position.sqrMagnitude < Universe.killAltitude)
+		if (armed && transform.position.sqrMagnitude < Universe.killAltitude)
 		{
 			//CmdDestroyPart(transform.position + transform.position.normalized * 0.25f);
 			DestroySelf();
@@ -153,7 +166,7 @@ public class Part : NetworkBehaviour
 		if (dead)
 			return;
 		dead = true;
-		builder.DestroyPart(gameObject, armed, transform.position, explosionRadius, explosionDamage, GetComponent<ControlModule>() ? 1 : 0);
+		mainBase.DestroyPart(gameObject, armed, transform.position, explosionRadius, explosionDamage, GetComponent<ControlModule>() ? 1 : 0);
 	}
 
 	void ApplyTorqueToAlignWithVelocity()
@@ -260,13 +273,14 @@ public class Part : NetworkBehaviour
 		hasAuthority = true;
 		foreach (Builder b in FindObjectsByType<Builder>(FindObjectsSortMode.None))
 		{
-			if (b.GetComponent<NetworkIdentity>().isLocalPlayer)
+			if (b.transform.parent.GetComponent<NetworkIdentity>().isLocalPlayer)
 			{
 				builder = b;
+				mainBase = b.transform.parent.GetComponent<Base>();
 				//b.InitializePart(gameObject);
 				if (GetComponent<ControlModule>())
 				{
-					transform.parent = b.transform;
+					transform.parent = b.transform.parent;
 					transform.localEulerAngles = Vector3.zero;
 					transform.localScale = Vector3.one * 10f;
 					transform.localPosition = new Vector3(0, 0, -1.5f);
