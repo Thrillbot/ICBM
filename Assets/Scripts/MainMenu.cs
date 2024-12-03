@@ -11,6 +11,7 @@ public class MainMenu : MonoBehaviour
 	public GameObject loadingScreen;
 	public GameObject mainMenuObject;
 	public GameObject settingsObject;
+	public GameObject worldSettingsObject;
 
 	public Transform cameraTransform;
 	public Transform[] cameraWaypoints;
@@ -75,10 +76,18 @@ public class MainMenu : MonoBehaviour
 		
 		cameraTransform.position = Vector3.Lerp(cameraStart, cameraWaypoints[waypointIndex].position, cameraLerpCurve.Evaluate(timer));
 		cameraTransform.rotation = Quaternion.Lerp(cameraStartRotation, cameraWaypoints[waypointIndex].rotation, cameraLerpCurve.Evaluate(timer));
-		
-		if (mainCameraWaypointIndex == 1 && mainTimer == 1)
+
+		if (mainTimer == 1)
 		{
-			networkCanvas.SetActive(true);
+			switch (mainCameraWaypointIndex)
+			{
+				case 0:
+					mainMenuCanvas.SetActive(true);
+					break;
+				case 1:
+					networkCanvas.SetActive(true);
+					break;
+			}
 		}
 	}
 
@@ -99,14 +108,14 @@ public class MainMenu : MonoBehaviour
 		mainCameraWaypointIndex = 0;
 		mainTimer = 0;
 
-		mainMenuCanvas.SetActive(false);
-		networkCanvas.SetActive(true);
+		networkCanvas.SetActive(false);
 	}
 
 	public void GoToMainMenu()
 	{
 		mainMenuObject.SetActive(true);
 		settingsObject.SetActive(false);
+		worldSettingsObject.SetActive(false);
 
 		cameraStart = cameraTransform.position;
 		cameraStartRotation = cameraTransform.rotation;
@@ -118,10 +127,23 @@ public class MainMenu : MonoBehaviour
 	{
 		mainMenuObject.SetActive(false);
 		settingsObject.SetActive(true);
+		worldSettingsObject.SetActive(false);
 
 		cameraStart = cameraTransform.position;
 		cameraStartRotation = cameraTransform.rotation;
 		waypointIndex = 1;
+		timer = 0;
+	}
+
+	public void GoToSinglePlayer()
+	{
+		mainMenuObject.SetActive(false);
+		settingsObject.SetActive(false);
+		worldSettingsObject.SetActive(true);
+
+		cameraStart = cameraTransform.position;
+		cameraStartRotation = cameraTransform.rotation;
+		waypointIndex = 2;
 		timer = 0;
 	}
 

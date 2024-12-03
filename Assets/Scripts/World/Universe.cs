@@ -14,6 +14,10 @@ public sealed class Universe
     public static Transform planetTransform;
     public static Dictionary<int, Vector3> equator;
 
+	public static float globalBiomeScale = 0.03f;
+	public static float maxHeight = 5f;
+    public static int seed = 1337;
+
 	public static float planetResolution = 2048;
 
 	public static float dayLengthInMinutes = 60;

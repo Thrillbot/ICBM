@@ -1,16 +1,23 @@
 using Mirror;
 using UnityEngine;
+using static Universe;
 
 public class GameManager : NetworkBehaviour
 {
 	[SyncVar(hook = "SetGameTime")]
 	private float gameTime;
 
-	[SyncVar(hook = "SetSeed")]
+	[SyncVar(hook = "SetPerlinSeed")]
 	private int perlinNoiseSeed;
 
 	[SyncVar(hook = "SetNoiseOffset")]
 	private Vector3 noiseOffset;
+	[SyncVar(hook = "SetBiomeScale")]
+	private float syncedBiomeScale;
+	[SyncVar(hook = "SetMaxHeight")]
+	private float syncedMaxHeight;
+	[SyncVar(hook = "SetSeed")]
+	private int syncedSeed;
 	private static bool noiseSyncd = false;
 
 	private void Start()
@@ -20,7 +27,11 @@ public class GameManager : NetworkBehaviour
 			if (perlinNoiseSeed == 0)
 				perlinNoiseSeed = Random.Range(int.MinValue, int.MaxValue);
 			Random.InitState(perlinNoiseSeed);
-			noiseOffset = new Vector3(Random.Range(999, 99999), Random.Range(999, 99999), Random.Range(999, 99999));
+			syncedSeed = seed;
+			syncedBiomeScale = globalBiomeScale;
+			syncedMaxHeight = maxHeight;
+			noiseOffset = Vector3.one * seed;
+			//noiseOffset = new Vector3(Random.Range(999, 99999), Random.Range(999, 99999), Random.Range(999, 99999));
 		}
 	}
 
@@ -29,7 +40,7 @@ public class GameManager : NetworkBehaviour
         if (!isServer)
             return;
 
-		SetGameTime(gameTime, gameTime + Time.deltaTime / (Universe.dayLengthInMinutes * 60f));
+		SetGameTime(gameTime, gameTime + Time.deltaTime / (dayLengthInMinutes * 60f));
 	}
 
 	void SetGameTime(float oldValue, float newValue)
@@ -41,7 +52,7 @@ public class GameManager : NetworkBehaviour
 		}
 	}
 
-	void SetSeed(int oldValue, int newValue)
+	void SetPerlinSeed(int oldValue, int newValue)
 	{
 		perlinNoiseSeed = newValue;
 	}
@@ -52,6 +63,21 @@ public class GameManager : NetworkBehaviour
 		noiseSyncd = true;
 
 		FindObjectOfType<Worldificate>().GenerateWorld();
+	}
+
+	void SetBiomeScale(float oldValue, float newValue)
+	{
+		globalBiomeScale = newValue;
+	}
+
+	void SetMaxHeight(float oldValue, float newValue)
+	{
+		maxHeight = newValue;
+	}
+
+	void SetSeed(int oldValue, int newValue)
+	{
+		seed = newValue;
 	}
 
 	public float GameTime

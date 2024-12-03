@@ -8,7 +8,6 @@ public class Worldificate : MonoBehaviour
 	public struct PerlinLevel
 	{
 		public float scale;
-		public int seed;
 		public float height;
 		public float exponent;
 		public AnimationCurve heightCurve;
@@ -17,8 +16,6 @@ public class Worldificate : MonoBehaviour
 	public GameObject planetObject;
 
 	public PerlinLevel[] perlinLevels;
-	public float globalBiomeScale = 25;
-	public float maxHeight = 10;
 	public AnimationCurve yValueCurve;
 	public bool generate;
 	public bool fakePlanet;
@@ -40,7 +37,7 @@ public class Worldificate : MonoBehaviour
 		if (generate)
 		{
 			if (fakePlanet)
-				noiseOffset = Vector3.one * Random.Range(-9999,9999);
+				noiseOffset = Vector3.one * seed;
 			else
 				noiseOffset = FindObjectOfType<GameManager>().NoiseOffset;
 
@@ -64,9 +61,16 @@ public class Worldificate : MonoBehaviour
 		SetPaused(!pauseUniverse, pauseUniverse);
 	}
 
-	public void GenerateWorld ()
+	public void GenerateWorld (bool forceGenerate = false)
 	{
-		if (worldGenerated) return;
+		if (worldGenerated && !forceGenerate) return;
+		noiseOffset = Vector3.one * seed;
+
+		if (worldGenerated && forceGenerate)
+		{
+			Debug.Log("Forcing world regeneration");
+		}
+
 		worldGenerated = true;
 		fakePlanet = false;
 
@@ -92,13 +96,14 @@ public class Worldificate : MonoBehaviour
 		Vector3[] vertices = chunk.GetComponent<MeshFilter>().mesh.vertices;
 		for (int i = 0; i < vertices.Length; i++)
 		{
+			vertices[i] = vertices[i].normalized;
 			float yValue = vertices[i].y;
 			vertexWorldPos = chunk.transform.TransformPoint(vertices[i]);
 			workerVec = vertexWorldPos.normalized;
 
 			foreach (PerlinLevel p in perlinLevels)
 			{
-				workerVec += vertexWorldPos.normalized * Mathf.Pow(p.heightCurve.Evaluate(Perlin.Noise(vertexWorldPos.x * p.scale + p.seed + noiseOffset.x, vertexWorldPos.y * p.scale + p.seed + noiseOffset.y, vertexWorldPos.z * p.scale + p.seed + noiseOffset.z)), p.exponent) * p.height;
+				workerVec += vertexWorldPos.normalized * Mathf.Pow(p.heightCurve.Evaluate(Perlin.Noise(vertexWorldPos.x * p.scale + seed + noiseOffset.x, vertexWorldPos.y * p.scale + seed + noiseOffset.y, vertexWorldPos.z * p.scale + seed + noiseOffset.z)) * (maxHeight - 1) + 1, p.exponent) * p.height;
 				workerVec -= vertexWorldPos.normalized;
 			}
 			vertices[i] += chunk.transform.InverseTransformPoint(workerVec * Perlin.Noise(vertexWorldPos.x * globalBiomeScale + noiseOffset.x, vertexWorldPos.y * globalBiomeScale + noiseOffset.y, vertexWorldPos.z * globalBiomeScale + noiseOffset.z)) * yValueCurve.Evaluate(vertices[i].normalized.y);

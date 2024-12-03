@@ -59,10 +59,12 @@ public class Builder : MonoBehaviour
 	private float maxFuel = 0;
 
 	private Base mainBase;
+	private BaseSinglePlayer mainBaseSinglePlayer;
 
 	void Awake()
 	{
 		mainBase = transform.parent.GetComponent<Base>();
+		mainBaseSinglePlayer = transform.parent.GetComponent<BaseSinglePlayer>();
 
 		cam = GameObject.FindWithTag("FreeCam").GetComponent<FreeCam>();
 
@@ -75,7 +77,7 @@ public class Builder : MonoBehaviour
 
 	void LateUpdate()
 	{
-		if (transform.parent == null || !transform.parent.GetComponent<NetworkBehaviour>().isOwned)
+		if (transform.parent == null || (transform.parent.GetComponent<NetworkBehaviour>() && !transform.parent.GetComponent<NetworkBehaviour>().isOwned))
 		{
 			//Debug.Log("Not Local Player");
 			return;
@@ -122,6 +124,11 @@ public class Builder : MonoBehaviour
 					fuelLevel += f.fuel;
 					maxFuel += f.maxFuel;
 				}
+				foreach (FuelTankSinglePlayer f in craftHead.GetComponentsInChildren<FuelTankSinglePlayer>())
+				{
+					fuelLevel += f.fuel;
+					maxFuel += f.maxFuel;
+				}
 				fuelVisual.fillAmount = fuelLevel / maxFuel;
 			}
 		}
@@ -153,7 +160,10 @@ public class Builder : MonoBehaviour
 
 						if (craftHead == null)
 						{
-							mainBase.CmdSpawnPart(-1, transform.parent.GetComponent<NetworkBehaviour>().netIdentity);
+							if (mainBase)
+								mainBase.CmdSpawnPart(-1, transform.parent.GetComponent<NetworkBehaviour>().netIdentity);
+							else
+								mainBaseSinglePlayer.CmdSpawnPart(-1);
 						}
 
 						return;
@@ -175,7 +185,10 @@ public class Builder : MonoBehaviour
 						if (player.GetButtonUp("Interact"))
 						{
 							currentHitCollider = h.collider;
-							mainBase.CmdSpawnPart(partIndex, transform.parent.GetComponent<NetworkBehaviour>().netIdentity);
+							if (mainBase)
+								mainBase.CmdSpawnPart(partIndex, transform.parent.GetComponent<NetworkBehaviour>().netIdentity);
+							else
+								mainBaseSinglePlayer.CmdSpawnPart(partIndex);
 							h.collider.enabled = false;
 						}
 					}
@@ -187,7 +200,10 @@ public class Builder : MonoBehaviour
 
 					h.collider.transform.parent.gameObject.GetComponent<Part>().attachedCollider.enabled = true;
 
-					mainBase.CmdDestroyPart(h.collider.transform.parent.gameObject.GetComponent<NetworkIdentity>());
+					if (mainBase)
+						mainBase.CmdDestroyPart(h.collider.transform.parent.gameObject.GetComponent<NetworkIdentity>());
+					else
+						mainBaseSinglePlayer.CmdDestroyPart(h.collider.transform.parent.gameObject);
 				}
 			}
 		}
@@ -287,8 +303,9 @@ public class Builder : MonoBehaviour
 	{
 		if (ghostPart != null)
 			Destroy(ghostPart);
+
 		ghostPart = Instantiate(parts[partIndex]);
-		Destroy(ghostPart.GetComponent<NetworkIdentity>());
+		Destroy(ghostPart.GetComponent<NetworkIdentity>()); 
 		ghostPart.transform.parent = launchPad;
 
 		for (int i = 0; i < ghostPart.GetComponentsInChildren<Renderer>().Length; i++)
@@ -311,6 +328,12 @@ public class Builder : MonoBehaviour
 		string feedback = "";
 		bool hasFuel = craftHead.transform.GetComponentsInChildren<FuelTank>().Length != 0;
 		bool hasThrust = craftHead.transform.GetComponentsInChildren<Thruster>().Length != 0;
+
+		if (mainBaseSinglePlayer)
+		{
+			hasFuel = craftHead.transform.GetComponentsInChildren<FuelTankSinglePlayer>().Length != 0;
+			hasThrust = craftHead.transform.GetComponentsInChildren<ThrusterSinglePlayer>().Length != 0;
+		}
 
 		if (!hasFuel)
 		{
